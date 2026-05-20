@@ -94,6 +94,27 @@
       <section class="card">
         <div class="card-header">
           <div>
+            <h2>Server control</h2>
+            <span>Server actions</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="actions">
+            <button class="action-button danger" onclick="addCommand('server_restart')">
+              Restart server
+              <small>server_restart</small>
+            </button>
+            <button class="action-button secondary" onclick="addCommand('server_update')">
+              Update server
+              <small>server_update</small>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
             <h2>Tonight's map cycle</h2>
             <span>Ordningen kan styras senare med drag-and-drop</span>
           </div>

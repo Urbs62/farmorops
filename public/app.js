@@ -1,4 +1,9 @@
-const maps = [
+const STORAGE_KEYS = {
+  maps: 'farmorops.mapLibrary',
+  cycle: 'farmorops.mapCycle'
+};
+
+const defaultMaps = [
   { name: 'de_mirage', type: 'standard', value: 'de_mirage' },
   { name: 'de_inferno', type: 'standard', value: 'de_inferno' },
   { name: 'de_dust2', type: 'standard', value: 'de_dust2' },
@@ -14,13 +19,60 @@ const maps = [
   { name: 'fy_pool_day', type: 'workshop', value: '3070286877' }
 ];
 
-let cycle = [];
+let maps = loadStoredMaps();
+let cycle = loadStoredCycle();
 let consoleLines = [];
 
 const mapList = document.getElementById('mapList');
 const cycleList = document.getElementById('cycleList');
 const consoleBox = document.getElementById('console');
 const mapSearch = document.getElementById('mapSearch');
+
+function readStorage(key, fallback) {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    addCommand('# Could not save changes to localStorage');
+  }
+}
+
+function isValidMap(map) {
+  return map
+    && typeof map.name === 'string'
+    && typeof map.type === 'string'
+    && typeof map.value === 'string';
+}
+
+function loadStoredMaps() {
+  const savedMaps = readStorage(STORAGE_KEYS.maps, null);
+  return Array.isArray(savedMaps) && savedMaps.every(isValidMap)
+    ? savedMaps
+    : [...defaultMaps];
+}
+
+function loadStoredCycle() {
+  const savedCycle = readStorage(STORAGE_KEYS.cycle, []);
+  return Array.isArray(savedCycle) && savedCycle.every(map => typeof map === 'string')
+    ? savedCycle
+    : [];
+}
+
+function saveMaps() {
+  writeStorage(STORAGE_KEYS.maps, maps);
+}
+
+function saveCycle() {
+  writeStorage(STORAGE_KEYS.cycle, cycle);
+}
 
 function renderMaps() {
   const query = mapSearch.value.toLowerCase().trim();
@@ -55,18 +107,21 @@ function renderCycle() {
 
 function addMapToCycle(map) {
   if (!cycle.includes(map)) cycle.push(map);
+  saveCycle();
   renderCycle();
   addCommand(`# Added to tonight cycle: ${map}`);
 }
 
 function removeMap(index) {
   const removed = cycle.splice(index, 1)[0];
+  saveCycle();
   renderCycle();
   addCommand(`# Removed from tonight cycle: ${removed}`);
 }
 
 function clearCycle() {
   cycle = [];
+  saveCycle();
   renderCycle();
   addCommand('# Cleared tonight map cycle');
 }
@@ -140,6 +195,7 @@ function addMapToLibrary() {
   }
 
   maps.push({ name, type, value });
+  saveMaps();
   nameInput.value = '';
   valueInput.value = '';
   updateNewMapPreview();
@@ -153,11 +209,42 @@ function setBots() {
   addCommand(`bot_quota ${value}`);
 }
 
+async function requestCommandPreview(command) {
+  const response = await fetch('/api/command', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'preview',
+      payload: { command }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error('Could not preview command');
+  }
+
+  const data = await response.json();
+  return data.preview || command;
+}
+
 function addCommand(command) {
   const timestamp = new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  consoleLines.push(`[${timestamp}] ${command}`);
+  const lineIndex = consoleLines.push(`[${timestamp}] ${command}`) - 1;
   consoleBox.textContent = consoleLines.join('\n');
   consoleBox.scrollTop = consoleBox.scrollHeight;
+
+  if (command.trim().startsWith('#')) return;
+
+  requestCommandPreview(command)
+    .then(preview => {
+      consoleLines[lineIndex] = `[${timestamp}] ${preview}`;
+      consoleBox.textContent = consoleLines.join('\n');
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    })
+    .catch(() => {
+      consoleLines[lineIndex] = `[${timestamp}] ${command}`;
+      consoleBox.textContent = consoleLines.join('\n');
+    });
 }
 
 function clearConsole() {
