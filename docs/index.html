@@ -175,6 +175,42 @@
       <section class="card">
         <div class="card-header">
           <div>
+            <h2>Game Control</h2>
+            <span>Server game announcements och kontroller</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="actions">
+            <button class="action-button" onclick="toggleAnnouncementInput()">
+              Announcement
+              <small>say &lt;message&gt;</small>
+            </button>
+            <button class="action-button ghost">
+              Future 1
+              <small>placeholder</small>
+            </button>
+            <button class="action-button ghost">
+              Future 2
+              <small>placeholder</small>
+            </button>
+          </div>
+
+          <div class="announcement-input-wrapper" id="announcementWrapper">
+            <input
+              type="text"
+              id="announcementInput"
+              placeholder="Enter announcement..."
+              maxlength="25"
+              autocomplete="off"
+            />
+            <button onclick="sendAnnouncement()">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
             <h2>RCON command preview</h2>
             <span>Första MVP: skriv bara ut kommandosträngar</span>
           </div>

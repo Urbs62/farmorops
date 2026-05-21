@@ -261,5 +261,42 @@ async function copyConsole() {
 
 mapSearch.addEventListener('input', renderMaps);
 
+function toggleAnnouncementInput() {
+  const wrapper = document.getElementById('announcementWrapper');
+  const input = document.getElementById('announcementInput');
+  const isVisible = wrapper.classList.contains('visible');
+
+  wrapper.classList.toggle('visible');
+
+  if (!isVisible) {
+    setTimeout(() => input.focus(), 50);
+  } else {
+    input.value = '';
+  }
+}
+
+function sendAnnouncement() {
+  const input = document.getElementById('announcementInput');
+  const message = input.value.trim();
+
+  if (!message) {
+    addCommand('# Announcement message cannot be empty');
+    return;
+  }
+
+  const command = `say ${message}`;
+  addCommand(command);
+
+  input.value = '';
+  const wrapper = document.getElementById('announcementWrapper');
+  wrapper.classList.remove('visible');
+}
+
+document.getElementById('announcementInput')?.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendAnnouncement();
+  }
+});
+
 renderMaps();
 renderCycle();
