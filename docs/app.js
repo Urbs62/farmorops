@@ -158,6 +158,16 @@ function generateCycleCommands() {
   cycle.forEach((map, index) => addCommand(`# ${index + 1}. ${getMapCommand(map)}`));
 }
 
+function announceCycle() {
+  if (!cycle.length) {
+    addCommand('# No maps selected for tonight\'s cycle');
+    return;
+  }
+
+  addCommand("say >>>>> TONIGHT'S MAP CYCLE <<<<<");
+  cycle.forEach((map, index) => addCommand(`say ${index + 1}. ${map}`));
+}
+
 function extractWorkshopId(value) {
   const trimmed = value.trim();
   const match = trimmed.match(/(?:id=)?(\d{8,})/);
