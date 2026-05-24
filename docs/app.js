@@ -298,20 +298,60 @@ document.getElementById('announcementInput')?.addEventListener('keypress', (e) =
   }
 });
 
+function getSuddenDeathStartMoney() {
+  const input = document.getElementById('suddenDeathStartMoney');
+  return input ? Number(input.value) : NaN;
+}
+
+function showSuddenDeathError(message) {
+  const messageEl = document.getElementById('suddenDeathMessage');
+  if (!messageEl) return;
+  messageEl.textContent = message;
+  messageEl.classList.toggle('visible', Boolean(message));
+}
+
+function validateStartMoney(value) {
+  if (Number.isNaN(value)) {
+    return 'Start money must be a number between 800 and 16000.';
+  }
+
+  if (!Number.isInteger(value)) {
+    return 'Start money must be a whole number.';
+  }
+
+  if (value < 800 || value > 16000) {
+    return 'Start money must be between 800 and 16000.';
+  }
+
+  return '';
+}
+
 function initiateSuddenDeath() {
+  const startMoney = getSuddenDeathStartMoney();
+  const validationMessage = validateStartMoney(startMoney);
+
+  if (validationMessage) {
+    showSuddenDeathError(validationMessage);
+    return;
+  }
+
+  showSuddenDeathError('');
+
   if (!confirm('Start Sudden Death mode?')) {
     return;
   }
 
-  executeSuddenDeathSequence();
+  executeSuddenDeathSequence(startMoney);
 }
 
-function executeSuddenDeathSequence() {
+function executeSuddenDeathSequence(startMoney) {
   const commands = [
-    'mp_restartgame 1',
-    'mp_maxrounds 3',
+    `mp_startmoney ${startMoney}`,
+    'mp_free_armor 2',
+    'mp_maxrounds 1',
     'mp_freezetime 1',
-    'say SUDDEN DEATH - Best of 3 rounds'
+    'mp_restartgame 1',
+    'say >>>>>>  SUDDEN DEATH  <<<<<<'
   ];
 
   commands.forEach(command => addCommand(command));

@@ -187,13 +187,25 @@
             </button>
             <button class="action-button sudden-death" onclick="initiateSuddenDeath()">
               Sudden Death
-              <small>mp_maxrounds 3</small>
+              <small>mp_maxrounds 1</small>
             </button>
             <button class="action-button ghost">
               Future 2
               <small>placeholder</small>
             </button>
           </div>
+
+          <div class="control-row sudden-death-settings">
+            <label for="suddenDeathStartMoney">Start money</label>
+            <input
+              type="number"
+              id="suddenDeathStartMoney"
+              min="800"
+              max="16000"
+              value="16000"
+            />
+          </div>
+          <div class="input-error" id="suddenDeathMessage" aria-live="polite"></div>
 
           <div class="announcement-input-wrapper" id="announcementWrapper">
             <input

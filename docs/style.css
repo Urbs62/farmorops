@@ -254,6 +254,12 @@ button:active { transform: translateY(1px); }
   margin-top: 14px;
 }
 
+.sudden-death-settings label {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 input[type="number"] {
   width: 100%;
   background: #0d1115;
@@ -262,6 +268,19 @@ input[type="number"] {
   border-radius: 12px;
   padding: 12px 14px;
   outline: none;
+}
+
+.input-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin-top: 8px;
+  min-height: 18px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.input-error.visible {
+  opacity: 1;
 }
 
 .console {
