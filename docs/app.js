@@ -213,10 +213,88 @@ function addMapToLibrary() {
   addCommand(`# Added map to library: ${name}`);
 }
 
-function setBots() {
-  const value = document.getElementById('botQuota').value;
-  document.getElementById('botMetric').textContent = value;
-  addCommand(`bot_quota ${value}`);
+function toggleBalanceUI() {
+  const wrapper = document.getElementById('balanceWrapper');
+  const isVisible = wrapper.classList.contains('visible');
+
+  wrapper.classList.toggle('visible');
+  if (!isVisible) {
+    setTimeout(() => {
+      const el = document.getElementById('ctPlayers');
+      if (el) el.focus();
+    }, 50);
+  }
+}
+
+function getCTPlayers() {
+  const input = document.getElementById('ctPlayers');
+  return input ? Number(input.value) : NaN;
+}
+
+function getTPlayers() {
+  const input = document.getElementById('tPlayers');
+  return input ? Number(input.value) : NaN;
+}
+
+function showBalanceError(message) {
+  const el = document.getElementById('balanceMessage');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('visible', Boolean(message));
+}
+
+function validatePlayers(value) {
+  if (Number.isNaN(value)) return 'Must be a number between 0 and 10.';
+  if (!Number.isInteger(value)) return 'Must be a whole number.';
+  if (value < 0 || value > 10) return 'Value must be between 0 and 10.';
+  return '';
+}
+
+function balanceBots() {
+  const ct = getCTPlayers();
+  const t = getTPlayers();
+
+  const v1 = validatePlayers(ct);
+  const v2 = validatePlayers(t);
+
+  if (v1) {
+    showBalanceError(`CT: ${v1}`);
+    return;
+  }
+
+  if (v2) {
+    showBalanceError(`T: ${v2}`);
+    return;
+  }
+
+  showBalanceError('');
+
+  // Always start with bot_kick per requirement
+  addCommand('bot_kick');
+
+  if (ct === t) {
+    addCommand("say >>>>> TEAMS ALREADY BALANCED <<<<<");
+    return;
+  }
+
+  const diff = Math.abs(ct - t);
+  const target = ct < t ? 'bot_add_ct' : 'bot_add_t';
+
+  for (let i = 0; i < diff; i++) {
+    addCommand(target);
+  }
+}
+
+function addCTBot() {
+  addCommand('bot_add_ct');
+}
+
+function addTBot() {
+  addCommand('bot_add_t');
+}
+
+function kickBots() {
+  addCommand('bot_kick');
 }
 
 async function requestCommandPreview(command) {

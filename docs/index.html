@@ -166,9 +166,29 @@
             </button>
           </div>
 
-          <div class="control-row">
-            <input type="number" id="botQuota" min="0" max="20" value="2" />
-            <button onclick="setBots()">Set number of bots</button>
+          <div class="toolbar bot-toolbar">
+            <button class="action-button" id="balanceToggleBtn" onclick="toggleBalanceUI()">
+              Balance Bots
+              <small>balance teams</small>
+            </button>
+            <button class="secondary" onclick="addCTBot()">Add CT Bot</button>
+            <button class="secondary" onclick="addTBot()">Add T Bot</button>
+            <button class="secondary" onclick="kickBots()">Kick Bots</button>
+          </div>
+
+          <div class="balance-wrapper" id="balanceWrapper">
+            <div class="control-row">
+              <label for="ctPlayers">Players in CT</label>
+              <input type="number" id="ctPlayers" min="0" max="10" value="5" />
+            </div>
+            <div class="control-row">
+              <label for="tPlayers">Players in T</label>
+              <input type="number" id="tPlayers" min="0" max="10" value="5" />
+            </div>
+            <div class="control-row">
+              <button onclick="balanceBots()">Balance</button>
+            </div>
+            <div class="input-error" id="balanceMessage" aria-live="polite"></div>
           </div>
         </div>
       </section>
