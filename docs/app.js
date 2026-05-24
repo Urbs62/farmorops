@@ -298,5 +298,24 @@ document.getElementById('announcementInput')?.addEventListener('keypress', (e) =
   }
 });
 
+function initiateSuddenDeath() {
+  if (!confirm('Start Sudden Death mode?')) {
+    return;
+  }
+
+  executeSuddenDeathSequence();
+}
+
+function executeSuddenDeathSequence() {
+  const commands = [
+    'mp_restartgame 1',
+    'mp_maxrounds 3',
+    'mp_freezetime 1',
+    'say SUDDEN DEATH - Best of 3 rounds'
+  ];
+
+  commands.forEach(command => addCommand(command));
+}
+
 renderMaps();
 renderCycle();
