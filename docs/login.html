@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FarmorOps – Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-page">
+    <section class="card login-card">
+      <div class="card-header">
+        <div>
+          <h1>FarmorOps</h1>
+          <p>Logga in för att fortsätta</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="login-description">Ange administratörsuppgifter för att öppna serverkontrollen.</p>
+
+        <form method="POST" action="/login" class="login-form">
+          <label>
+            Username
+            <input type="text" name="username" autocomplete="username" required autofocus />
+          </label>
+
+          <label>
+            Password
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+
+          <div class="input-error" id="loginError" aria-live="polite"></div>
+
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const error = params.get('error');
+    if (error) {
+      const el = document.getElementById('loginError');
+      if (el) el.textContent = decodeURIComponent(error);
+    }
+  </script>
+</body>
+</html>
