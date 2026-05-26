@@ -149,13 +149,9 @@
               Restart match
               <small>mp_restartgame 1</small>
             </button>
-            <button class="action-button secondary" onclick="addCommand('mp_pause_match')">
-              Pause match
+            <button id="pauseToggleBtn" class="action-button secondary" onclick="togglePauseMatch()">
+              Pause Match
               <small>mp_pause_match</small>
-            </button>
-            <button class="action-button secondary" onclick="addCommand('mp_unpause_match')">
-              Unpause match
-              <small>mp_unpause_match</small>
             </button>
             <button class="action-button secondary" onclick="addCommand('bot_kick')">
               Kick bots

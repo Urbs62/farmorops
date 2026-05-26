@@ -22,6 +22,7 @@ const defaultMaps = [
 let maps = loadStoredMaps();
 let cycle = loadStoredCycle();
 let consoleLines = [];
+let matchPaused = false;
 
 const mapList = document.getElementById('mapList');
 const cycleList = document.getElementById('cycleList');
@@ -297,6 +298,24 @@ function kickBots() {
   addCommand('bot_kick');
 }
 
+function updatePauseButton() {
+  const button = document.getElementById('pauseToggleBtn');
+  if (!button) return;
+
+  const label = matchPaused ? 'Resume Match' : 'Pause Match';
+  const commandHint = matchPaused ? 'mp_unpause_match' : 'mp_pause_match';
+
+  button.classList.toggle('paused', matchPaused);
+  button.innerHTML = `${label}<small>${commandHint}</small>`;
+}
+
+function togglePauseMatch() {
+  const command = matchPaused ? 'mp_unpause_match' : 'mp_pause_match';
+  addCommand(command);
+  matchPaused = !matchPaused;
+  updatePauseButton();
+}
+
 async function requestCommandPreview(command) {
   const response = await fetch('/api/command', {
     method: 'POST',
@@ -348,6 +367,7 @@ async function copyConsole() {
 }
 
 mapSearch.addEventListener('input', renderMaps);
+updatePauseButton();
 
 function toggleAnnouncementInput() {
   const wrapper = document.getElementById('announcementWrapper');

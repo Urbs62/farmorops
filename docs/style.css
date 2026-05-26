@@ -150,6 +150,16 @@ button.secondary {
   border: 1px solid var(--border);
 }
 
+button.secondary.paused {
+  background: rgba(242, 184, 75, 0.14);
+  color: var(--accent);
+  border-color: rgba(242, 184, 75, 0.35);
+}
+
+button.secondary.paused small {
+  color: rgba(242, 184, 75, 0.9);
+}
+
 button.danger {
   background: var(--danger);
   color: white;
