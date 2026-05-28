@@ -4,21 +4,7 @@ const STORAGE_KEYS = {
   cycle: 'farmorops.mapCycle'
 };
 
-const defaultMaps = [
-  { name: 'de_mirage', type: 'standard', value: 'de_mirage', source: 'manual' },
-  { name: 'de_inferno', type: 'standard', value: 'de_inferno', source: 'manual' },
-  { name: 'de_dust2', type: 'standard', value: 'de_dust2', source: 'manual' },
-  { name: 'de_nuke', type: 'standard', value: 'de_nuke', source: 'manual' },
-  { name: 'de_vertigo', type: 'standard', value: 'de_vertigo', source: 'manual' },
-  { name: 'de_ancient', type: 'standard', value: 'de_ancient', source: 'manual' },
-  { name: 'de_anubis', type: 'standard', value: 'de_anubis', source: 'manual' },
-  { name: 'de_overpass', type: 'standard', value: 'de_overpass', source: 'manual' },
-  { name: 'cs_office', type: 'standard', value: 'cs_office', source: 'manual' },
-  { name: 'cs_italy', type: 'standard', value: 'cs_italy', source: 'manual' },
-  { name: 'aim_redline', type: 'workshop', value: '3070244462', source: 'manual' },
-  { name: 'awp_lego_2', type: 'workshop', value: '3070251264', source: 'manual' },
-  { name: 'fy_pool_day', type: 'workshop', value: '3070286877', source: 'manual' }
-];
+const defaultMaps = [];
 
 const defaultInventory = [
   { name: 'de_mirage', type: 'standard', value: 'de_mirage' },
@@ -130,6 +116,28 @@ function addInventoryMap(mapName) {
   addCommand(`# Added to selectable maps: ${map.name}`);
 }
 
+function removeSelectableMap(mapName) {
+  const index = maps.findIndex(item => item.name === mapName);
+  if (index === -1) return;
+
+  maps.splice(index, 1);
+  saveMaps();
+
+  const removedFromCycle = cycle.includes(mapName);
+  if (removedFromCycle) {
+    cycle = cycle.filter(item => item !== mapName);
+    saveCycle();
+  }
+
+  renderMaps();
+  renderInventory();
+  renderCycle();
+  addCommand(`# Removed from selectable maps: ${mapName}`);
+  if (removedFromCycle) {
+    addCommand(`# Removed from tonight cycle: ${mapName}`);
+  }
+}
+
 function renderInventory() {
   if (!inventoryList) return;
 
@@ -157,6 +165,11 @@ function renderMaps() {
   const query = mapSearch.value.toLowerCase().trim();
   const filtered = maps.filter(map => map.name.toLowerCase().includes(query) || map.value.toLowerCase().includes(query));
 
+  if (!filtered.length) {
+    mapList.innerHTML = '<div class="empty">Inga banor valda ännu. Lägg till banor från Available on Farmor.</div>';
+    return;
+  }
+
   mapList.innerHTML = filtered.map(map => {
     const origin = map.source === 'inventory'
       ? '<span class="source-pill">Available on Farmor</span>'
@@ -168,7 +181,10 @@ function renderMaps() {
           <span class="map-name">${map.name}</span> ${origin}<br>
           <small style="color: var(--muted)">${map.type === 'workshop' ? 'Workshop ID: ' + map.value : 'Standard map'}</small>
         </span>
-        <button onclick="addMapToCycle('${map.name}')">Add</button>
+        <div class="map-actions">
+          <button onclick="addMapToCycle('${map.name}')">Add</button>
+          <button class="secondary" onclick="removeSelectableMap('${map.name}')">Remove</button>
+        </div>
       </div>
     `;
   }).join('');

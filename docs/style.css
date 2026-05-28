@@ -129,6 +129,12 @@ main {
 
 .map-row:hover { border-color: var(--accent-dark); }
 
+.map-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .map-name {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 14px;
