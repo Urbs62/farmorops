@@ -1,30 +1,55 @@
 const STORAGE_KEYS = {
-  maps: 'farmorops.mapLibrary',
+  selectableMaps: 'farmorops_selectable_maps_v1',
+  inventory: 'farmorops_inventory_maps_v1',
   cycle: 'farmorops.mapCycle'
 };
 
 const defaultMaps = [
+  { name: 'de_mirage', type: 'standard', value: 'de_mirage', source: 'manual' },
+  { name: 'de_inferno', type: 'standard', value: 'de_inferno', source: 'manual' },
+  { name: 'de_dust2', type: 'standard', value: 'de_dust2', source: 'manual' },
+  { name: 'de_nuke', type: 'standard', value: 'de_nuke', source: 'manual' },
+  { name: 'de_vertigo', type: 'standard', value: 'de_vertigo', source: 'manual' },
+  { name: 'de_ancient', type: 'standard', value: 'de_ancient', source: 'manual' },
+  { name: 'de_anubis', type: 'standard', value: 'de_anubis', source: 'manual' },
+  { name: 'de_overpass', type: 'standard', value: 'de_overpass', source: 'manual' },
+  { name: 'cs_office', type: 'standard', value: 'cs_office', source: 'manual' },
+  { name: 'cs_italy', type: 'standard', value: 'cs_italy', source: 'manual' },
+  { name: 'aim_redline', type: 'workshop', value: '3070244462', source: 'manual' },
+  { name: 'awp_lego_2', type: 'workshop', value: '3070251264', source: 'manual' },
+  { name: 'fy_pool_day', type: 'workshop', value: '3070286877', source: 'manual' }
+];
+
+const defaultInventory = [
   { name: 'de_mirage', type: 'standard', value: 'de_mirage' },
   { name: 'de_inferno', type: 'standard', value: 'de_inferno' },
   { name: 'de_dust2', type: 'standard', value: 'de_dust2' },
   { name: 'de_nuke', type: 'standard', value: 'de_nuke' },
-  { name: 'de_vertigo', type: 'standard', value: 'de_vertigo' },
+  { name: 'de_overpass', type: 'standard', value: 'de_overpass' },
   { name: 'de_ancient', type: 'standard', value: 'de_ancient' },
   { name: 'de_anubis', type: 'standard', value: 'de_anubis' },
-  { name: 'de_overpass', type: 'standard', value: 'de_overpass' },
   { name: 'cs_office', type: 'standard', value: 'cs_office' },
-  { name: 'cs_italy', type: 'standard', value: 'cs_italy' },
-  { name: 'aim_redline', type: 'workshop', value: '3070244462' },
-  { name: 'awp_lego_2', type: 'workshop', value: '3070251264' },
-  { name: 'fy_pool_day', type: 'workshop', value: '3070286877' }
+  { name: 'de_vertigo', type: 'standard', value: 'de_vertigo' },
+  { name: 'fy_pool_day', type: 'workshop', value: '3070286877' },
+  { name: 'awp_lego_2', type: 'workshop', value: '3070251264' }
 ];
 
+function getMockFarmorInventory() {
+  return [...defaultInventory];
+}
+
+function fetchAvailableInventory() {
+  return Promise.resolve(getMockFarmorInventory());
+}
+
 let maps = loadStoredMaps();
+let inventoryMaps = loadStoredInventory();
 let cycle = loadStoredCycle();
 let consoleLines = [];
 let matchPaused = false;
 
 const mapList = document.getElementById('mapList');
+const inventoryList = document.getElementById('inventoryList');
 const cycleList = document.getElementById('cycleList');
 const consoleBox = document.getElementById('console');
 const mapSearch = document.getElementById('mapSearch');
@@ -53,13 +78,6 @@ function isValidMap(map) {
     && typeof map.value === 'string';
 }
 
-function loadStoredMaps() {
-  const savedMaps = readStorage(STORAGE_KEYS.maps, null);
-  return Array.isArray(savedMaps) && savedMaps.every(isValidMap)
-    ? savedMaps
-    : [...defaultMaps];
-}
-
 function loadStoredCycle() {
   const savedCycle = readStorage(STORAGE_KEYS.cycle, []);
   return Array.isArray(savedCycle) && savedCycle.every(map => typeof map === 'string')
@@ -68,26 +86,92 @@ function loadStoredCycle() {
 }
 
 function saveMaps() {
-  writeStorage(STORAGE_KEYS.maps, maps);
+  writeStorage(STORAGE_KEYS.selectableMaps, maps);
+}
+
+function saveInventory() {
+  writeStorage(STORAGE_KEYS.inventory, inventoryMaps);
 }
 
 function saveCycle() {
   writeStorage(STORAGE_KEYS.cycle, cycle);
 }
 
+function isSelectableMap(map) {
+  return maps.some(item => item.name === map.name);
+}
+
+function loadStoredInventory() {
+  const savedInventory = readStorage(STORAGE_KEYS.inventory, null);
+  return Array.isArray(savedInventory) && savedInventory.every(isValidMap)
+    ? savedInventory
+    : getMockFarmorInventory();
+}
+
+function loadStoredMaps() {
+  let savedMaps = readStorage(STORAGE_KEYS.selectableMaps, null);
+  if (savedMaps === null) {
+    savedMaps = readStorage('farmorops.mapLibrary', null);
+  }
+
+  return Array.isArray(savedMaps) && savedMaps.every(isValidMap)
+    ? savedMaps
+    : [...defaultMaps];
+}
+
+function addInventoryMap(mapName) {
+  const map = inventoryMaps.find(item => item.name === mapName);
+  if (!map || isSelectableMap(map)) return;
+
+  maps.push({ ...map, source: 'inventory' });
+  saveMaps();
+  renderMaps();
+  renderInventory();
+  addCommand(`# Added to selectable maps: ${map.name}`);
+}
+
+function renderInventory() {
+  if (!inventoryList) return;
+
+  inventoryList.innerHTML = inventoryMaps.map(map => {
+    const selected = isSelectableMap(map);
+    const label = map.type === 'workshop'
+      ? 'Workshop ID: ' + map.value
+      : 'Standard map';
+
+    return `
+      <div class="map-row">
+        <span>
+          <span class="map-name">${map.name}</span><br>
+          <small style="color: var(--muted)">${label}</small>
+        </span>
+        <button type="button" data-action="add-inventory" data-map="${map.name}" ${selected ? 'disabled' : ''}>
+          ${selected ? 'Added' : 'Add'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
 function renderMaps() {
   const query = mapSearch.value.toLowerCase().trim();
   const filtered = maps.filter(map => map.name.toLowerCase().includes(query) || map.value.toLowerCase().includes(query));
 
-  mapList.innerHTML = filtered.map(map => `
-    <div class="map-row">
-      <span>
-        <span class="map-name">${map.name}</span><br>
-        <small style="color: var(--muted)">${map.type === 'workshop' ? 'Workshop ID: ' + map.value : 'Standard map'}</small>
-      </span>
-      <button onclick="addMapToCycle('${map.name}')">Add</button>
-    </div>
-  `).join('');
+  mapList.innerHTML = filtered.map(map => {
+    const origin = map.source === 'inventory'
+      ? '<span class="source-pill">Available on Farmor</span>'
+      : '';
+
+    return `
+      <div class="map-row">
+        <span>
+          <span class="map-name">${map.name}</span> ${origin}<br>
+          <small style="color: var(--muted)">${map.type === 'workshop' ? 'Workshop ID: ' + map.value : 'Standard map'}</small>
+        </span>
+        <button onclick="addMapToCycle('${map.name}')">Add</button>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderCycle() {
@@ -367,6 +451,16 @@ async function copyConsole() {
 }
 
 mapSearch.addEventListener('input', renderMaps);
+
+if (inventoryList) {
+  inventoryList.addEventListener('click', event => {
+    const button = event.target.closest('button[data-action="add-inventory"]');
+    if (!button) return;
+    const mapName = button.dataset.map;
+    addInventoryMap(mapName);
+  });
+}
+
 updatePauseButton();
 
 function toggleAnnouncementInput() {
@@ -466,4 +560,5 @@ function executeSuddenDeathSequence(startMoney) {
 }
 
 renderMaps();
+renderInventory();
 renderCycle();
