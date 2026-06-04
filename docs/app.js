@@ -166,7 +166,7 @@ function renderMaps() {
   const filtered = maps.filter(map => map.name.toLowerCase().includes(query) || map.value.toLowerCase().includes(query));
 
   if (!filtered.length) {
-    mapList.innerHTML = '<div class="empty">Inga banor valda ännu. Lägg till banor från Available on Farmor.</div>';
+    mapList.innerHTML = '<div class="empty">No selectable maps yet. Add maps from Available on Farmor.</div>';
     return;
   }
 
@@ -192,7 +192,7 @@ function renderMaps() {
 
 function renderCycle() {
   if (!cycle.length) {
-    cycleList.innerHTML = '<div class="empty">Inga banor valda ännu. Lägg till banor från listan till vänster.</div>';
+    cycleList.innerHTML = '<div class="empty">No maps selected yet. Add maps from the list on the left.</div>';
     return;
   }
 
