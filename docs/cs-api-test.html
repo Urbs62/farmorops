@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FarmorOps CS API Test</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .api-test-container { max-width: 920px; margin: 0 auto; }
+    .api-test-grid { display: grid; gap: 1rem; }
+    .api-test-grid > section { padding: 1rem; }
+    .api-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+    .api-log { min-height: 160px; white-space: pre-wrap; background: #111; color: #d7d7d7; padding: 1rem; border-radius: 12px; font-family: ui-monospace, monospace; overflow: auto; }
+    .api-section { display: grid; gap: 0.75rem; }
+    .api-section label { font-weight: 600; }
+    .api-section select { width: 100%; }
+    .api-section ul { list-style: none; margin: 0; padding: 0; }
+    .api-section li { padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .api-section .source-pill { display: inline-block; margin-left: 0.5rem; padding: 0.15rem 0.45rem; border-radius: 999px; background: #222; font-size: 0.8rem; }
+    .page-note { border: 1px solid #f0ad4e; background: #fff3cd; color: #856404; padding: 0.85rem 1rem; border-radius: 10px; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>FarmorOps CS API Test</h1>
+      <p>Quick integration dashboard for the Counter-Strike 2 server API.</p>
+    </div>
+    <div class="header-actions">
+      <a href="/" class="secondary">Back to dashboard</a>
+    </div>
+  </header>
+
+  <main class="api-test-container">
+    <div id="pageNotice" class="page-note" style="display:none;">
+      This page is loaded from <code>file://</code>. For proper API access, run the local FarmorOps server and open
+      <strong>http://localhost:3000/cs-api-test.html</strong> instead.
+    </div>
+    <div class="api-test-grid">
+      <section class="card api-section">
+        <div class="card-header">
+          <div>
+            <h2>Map list</h2>
+            <span>Load all maps and select one to change.</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="api-buttons">
+            <button id="loadMapsBtn">Load all maps</button>
+            <button id="changeMapBtn" class="secondary" disabled>Change selected map</button>
+          </div>
+
+          <label for="mapSelect">Select map</label>
+          <select id="mapSelect" disabled>
+            <option value="">Select a map</option>
+          </select>
+
+          <div class="api-sections">
+            <section>
+              <h3>Builtin maps</h3>
+              <ul id="builtinList"></ul>
+            </section>
+            <section>
+              <h3>Workshop maps</h3>
+              <ul id="workshopList"></ul>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="card api-section">
+        <div class="card-header">
+          <div>
+            <h2>Match actions</h2>
+            <span>Restart the current match through the CS API.</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <button id="restartMatchBtn">Restart match</button>
+        </div>
+      </section>
+
+      <section class="card api-section">
+        <div class="card-header">
+          <div>
+            <h2>API log</h2>
+            <span>Requests, responses and error messages.</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="apiLog" class="api-log">Ready.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const apiLog = document.getElementById('apiLog');
+    const pageNotice = document.getElementById('pageNotice');
+    const loadMapsBtn = document.getElementById('loadMapsBtn');
+    const changeMapBtn = document.getElementById('changeMapBtn');
+    const restartMatchBtn = document.getElementById('restartMatchBtn');
+    const mapSelect = document.getElementById('mapSelect');
+    const builtinList = document.getElementById('builtinList');
+    const workshopList = document.getElementById('workshopList');
+    const API_BASE = location.protocol === 'file:' ? 'http://localhost:3000' : location.origin;
+
+    if (location.protocol === 'file:' && pageNotice) {
+      pageNotice.style.display = 'block';
+    }
+
+    function log(message) {
+      const timestamp = new Date().toISOString();
+      apiLog.textContent = `${timestamp} - ${message}\n${apiLog.textContent}`;
+    }
+
+    function toJson(response) {
+      return response.json().catch(() => null);
+    }
+
+    async function request(path, options = {}) {
+      try {
+        const url = new URL(path, API_BASE);
+        const response = await fetch(url.href, {
+          credentials: 'include',
+          ...options
+        });
+        const body = await toJson(response);
+        if (!response.ok) {
+          const errorMessage = body?.message || body?.error || response.statusText || `HTTP ${response.status}`;
+          log(`ERROR ${response.status} ${options.method || 'GET'} ${url.href}: ${errorMessage}`);
+          if (body != null) {
+            log(`RESPONSE BODY: ${typeof body === 'string' ? body : JSON.stringify(body)}`);
+          }
+          throw new Error(errorMessage);
+        }
+        log(`SUCCESS ${response.status} ${options.method || 'GET'} ${url.href}`);
+        if (body != null) {
+          log(`RESPONSE BODY: ${typeof body === 'string' ? body : JSON.stringify(body)}`);
+        }
+        return body;
+      } catch (err) {
+        log(`Request failed: ${err.message}`);
+        throw err;
+      }
+    }
+
+    function renderMaps(maps) {
+      const builtin = maps.filter((map) => map.source === 'BUILTIN');
+      const workshop = maps.filter((map) => map.source === 'WORKSHOP');
+
+      builtinList.innerHTML = builtin.map((map) => `
+        <li>
+          <strong>${map.displayName}</strong>
+          <span class="source-pill">${map.source}</span><br>
+          <small>${map.id}</small>
+        </li>
+      `).join('') || '<li>No builtin maps available.</li>';
+
+      workshopList.innerHTML = workshop.map((map) => `
+        <li>
+          <strong>${map.displayName}</strong>
+          <span class="source-pill">${map.source}</span><br>
+          <small>${map.id} / workshop:${map.workshopId}</small>
+        </li>
+      `).join('') || '<li>No workshop maps available.</li>';
+    }
+
+    function populateMapSelect(maps) {
+      mapSelect.innerHTML = '<option value="">Select a map</option>' + maps.map((map) => `
+        <option value="${map.id}">${map.displayName} (${map.source})</option>
+      `).join('');
+      mapSelect.disabled = false;
+    }
+
+    async function loadMaps() {
+      loadMapsBtn.disabled = true;
+      try {
+        const maps = await request('/api/cs/maps');
+        renderMaps(maps);
+        populateMapSelect(maps);
+        changeMapBtn.disabled = false;
+      } finally {
+        loadMapsBtn.disabled = false;
+      }
+    }
+
+    async function changeMap() {
+      const mapId = mapSelect.value;
+      if (!mapId) {
+        log('Please select a map before changing.');
+        return;
+      }
+      changeMapBtn.disabled = true;
+      try {
+        await request('/api/cs/change-map', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mapId })
+        });
+        log(`Map change requested: ${mapId}`);
+      } finally {
+        changeMapBtn.disabled = false;
+      }
+    }
+
+    async function restartMatch() {
+      restartMatchBtn.disabled = true;
+      try {
+        await request('/api/cs/restart-match', { method: 'POST' });
+        log('Restart match requested.');
+      } finally {
+        restartMatchBtn.disabled = false;
+      }
+    }
+
+    loadMapsBtn.addEventListener('click', loadMaps);
+    changeMapBtn.addEventListener('click', changeMap);
+    restartMatchBtn.addEventListener('click', restartMatch);
+
+    window.addEventListener('load', () => {
+      loadMaps();
+    });
+  </script>
+</body>
+</html>

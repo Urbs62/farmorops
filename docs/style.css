@@ -94,6 +94,41 @@ main {
   font-size: 13px;
 }
 
+.header-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(15, 20, 25, 0.95);
+  color: var(--text);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  min-width: 118px;
+  text-align: center;
+}
+
+.mode-badge.live {
+  background: rgba(95, 196, 123, 0.14);
+  border-color: rgba(95, 196, 123, 0.35);
+  color: var(--ok);
+}
+
+.mode-badge.preview,
+.mode-badge.warning {
+  background: rgba(224, 82, 82, 0.14);
+  border-color: rgba(224, 82, 82, 0.35);
+  color: var(--danger);
+}
+
 .card-body { padding: 18px 20px 20px; }
 
 .search {
@@ -118,16 +153,67 @@ main {
 
 .map-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  padding: 11px 12px;
-  border-radius: 12px;
+  padding: 14px 14px;
+  border-radius: 14px;
   background: #11171d;
   border: 1px solid transparent;
 }
 
 .map-row:hover { border-color: var(--accent-dark); }
+
+.map-row-left {
+  display: grid;
+  gap: 6px;
+}
+
+.map-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.map-badge-builtin,
+.map-badge-standard {
+  color: #e8c47a;
+  background: rgba(242, 184, 75, 0.14);
+}
+
+.map-badge-workshop {
+  color: #6ec2ff;
+  background: rgba(110, 194, 255, 0.15);
+}
+
+.map-badge-manual {
+  color: #c5c1ad;
+  background: rgba(179, 176, 162, 0.14);
+}
+
+.map-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.map-note {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
 
 .map-actions {
   display: flex;
@@ -183,6 +269,71 @@ button[disabled] {
   cursor: not-allowed;
   background: var(--panel-soft);
   color: var(--muted);
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.server-control-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.input-row input {
+  flex: 1 1 220px;
+}
+
+.player-section {
+  margin-top: 18px;
+}
+
+.status-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.status-note.warning {
+  color: var(--danger);
+}
+
+.player-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.player-item {
+  padding: 12px;
+  border-radius: 12px;
+  background: #0e1620;
+  border: 1px solid var(--border);
+  display: grid;
+  gap: 4px;
+}
+
+.player-item strong {
+  display: block;
+}
+
+.map-note {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.map-note-unavailable {
+  color: #ffb3b3;
 }
 
 button.danger {

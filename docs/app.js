@@ -39,6 +39,28 @@ const inventoryList = document.getElementById('inventoryList');
 const cycleList = document.getElementById('cycleList');
 const consoleBox = document.getElementById('console');
 const mapSearch = document.getElementById('mapSearch');
+const refreshAvailableMapsBtn = document.getElementById('refreshAvailableMapsBtn');
+const clearAvailableMapsBtn = document.getElementById('clearAvailableMapsBtn');
+const importStatusEl = document.getElementById('importStatus');
+const refreshServerStatusBtn = document.getElementById('refreshServerStatusBtn');
+const csApiCurrentMap = document.getElementById('csApiCurrentMap');
+const csApiOnlineStatus = document.getElementById('csApiOnlineStatus');
+const csApiPlayerCount = document.getElementById('csApiPlayerCount');
+const csApiPlayerList = document.getElementById('csApiPlayerList');
+const csApiStatusMessage = document.getElementById('csApiStatusMessage');
+const csApiModeBadge = document.getElementById('csApiModeBadge');
+const csApiModeWarning = document.getElementById('csApiModeWarning');
+const csApiResponseLog = document.getElementById('csApiResponseLog');
+const csApiMapcycleWarning = document.getElementById('csApiMapcycleWarning');
+const csApiMapSelect = document.getElementById('csApiMapSelect');
+const csApiChangeMapBtn = document.getElementById('csApiChangeMapBtn');
+const csApiGetMapcycleBtn = document.getElementById('csApiGetMapcycleBtn');
+const csApiUpdateMapcycleBtn = document.getElementById('csApiUpdateMapcycleBtn');
+const csApiWarmupBtn = document.getElementById('csApiWarmupBtn');
+const csApiOrdinaryBtn = document.getElementById('csApiOrdinaryBtn');
+const csApiRestartMatchBtn = document.getElementById('csApiRestartMatchBtn');
+const csApiMessageInput = document.getElementById('csApiMessageInput');
+const csApiSendMessageBtn = document.getElementById('csApiSendMessageBtn');
 
 function readStorage(key, fallback) {
   try {
@@ -77,6 +99,501 @@ function saveMaps() {
 
 function saveInventory() {
   writeStorage(STORAGE_KEYS.inventory, inventoryMaps);
+}
+
+function setImportStatus(message, type = 'info') {
+  if (!importStatusEl) return;
+  importStatusEl.textContent = message;
+  importStatusEl.style.color = type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--ok)' : 'var(--text)';
+}
+
+function setServerStatusMessage(message, type = 'info') {
+  if (!csApiStatusMessage) return;
+  csApiStatusMessage.textContent = message;
+  csApiStatusMessage.style.color = type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--ok)' : 'var(--text)';
+}
+
+function setCsApiMapcycleWarning(message) {
+  if (!csApiMapcycleWarning) return;
+  csApiMapcycleWarning.textContent = message;
+}
+
+function setCsApiModeBadge(message, cssClass) {
+  if (!csApiModeBadge) return;
+  csApiModeBadge.textContent = message;
+  csApiModeBadge.className = `mode-badge ${cssClass || ''}`.trim();
+}
+
+function setCsApiModeWarning(message) {
+  if (!csApiModeWarning) return;
+  csApiModeWarning.textContent = message;
+}
+
+function appendCsApiResponseLog(title, response, body) {
+  if (!csApiResponseLog) return;
+  const timestamp = new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const statusText = response ? `${response.status} ${response.statusText || ''}` : 'NETWORK ERROR';
+  const header = `[${timestamp}] ${title} — ${statusText}`;
+  const bodyText = body != null ? JSON.stringify(body, null, 2) : '<no body>';
+  csApiResponseLog.textContent = `${header}\n${bodyText}\n\n${csApiResponseLog.textContent || ''}`;
+}
+
+function renderAvailableMapOptions() {
+  if (!csApiMapSelect) return;
+
+  const options = inventoryMaps.map(map => {
+    const title = map.type === 'workshop'
+      ? `${map.name} (WORKSHOP)`
+      : `${map.name} (BUILTIN)`;
+    const key = getMapKey(map);
+    const disabled = map.unavailable || !key ? 'disabled' : '';
+    return `
+      <option value="${key}" ${disabled}>${title}</option>
+    `;
+  }).join('');
+
+  csApiMapSelect.innerHTML = `<option value="">Choose an available map</option>${options}`;
+}
+
+function syncSelectedMapToInput() {
+  if (!csApiMapSelect || !csApiChangeMapBtn) return;
+  const selected = csApiMapSelect.value;
+  if (selected) {
+    const input = document.getElementById('csApiChangeMapInput');
+    if (input) input.value = selected;
+  }
+}
+
+function renderServerStatus(status) {
+  if (csApiCurrentMap) {
+    csApiCurrentMap.textContent = status?.currentMap || '—';
+  }
+
+  if (csApiOnlineStatus) {
+    csApiOnlineStatus.textContent = status?.online ? 'Online' : 'Offline';
+  }
+
+  if (csApiPlayerCount) {
+    const playerCount = typeof status?.playerCount === 'number' ? status.playerCount : 0;
+    const maxPlayers = typeof status?.maxPlayers === 'number' ? status.maxPlayers : 0;
+    csApiPlayerCount.textContent = `${playerCount} / ${maxPlayers}`;
+  }
+
+  if (csApiPlayerList) {
+    const players = Array.isArray(status?.players) ? status.players : [];
+    if (!players.length) {
+      csApiPlayerList.innerHTML = '<div class="player-item">No players connected.</div>';
+      return;
+    }
+
+    csApiPlayerList.innerHTML = players.map(player => `
+      <div class="player-item">
+        <strong>${player.name}</strong>
+        <small>${player.steamId}</small>
+        <div>${player.score} pts · ${player.durationSeconds}s</div>
+      </div>
+    `).join('');
+  }
+}
+
+function getMapKey(map) {
+  return map.id || map.value || map.name || '';
+}
+
+function normalizeServerMap(map) {
+  if (!map || typeof map !== 'object') return null;
+
+  const isWorkshop = map.source === 'WORKSHOP';
+  const value = isWorkshop ? (map.workshopId || map.name) : map.name;
+
+  return {
+    id: map.id || map.name,
+    name: map.displayName || map.name,
+    type: isWorkshop ? 'workshop' : 'standard',
+    value,
+    origin: map.source,
+    validForMapCycle: Boolean(map.validForMapCycle),
+    unavailable: false
+  };
+}
+
+function areMapsEqual(existing, imported) {
+  if (existing.id && imported.id) {
+    return existing.id === imported.id;
+  }
+  return existing.name === imported.name || existing.value === imported.value;
+}
+
+function updateAvailableMapsFromServer(items) {
+  const imported = items
+    .map(normalizeServerMap)
+    .filter(map => map && map.name && map.value);
+
+  const serverKeys = new Set(imported.map(getMapKey));
+  const merged = imported.map((incoming) => {
+    const duplicate = inventoryMaps.find(existing => areMapsEqual(existing, incoming));
+    if (duplicate) {
+      return { ...duplicate, ...incoming, unavailable: false };
+    }
+    return incoming;
+  });
+
+  const manualMaps = inventoryMaps.filter(map => !map.origin);
+  manualMaps.forEach((manual) => {
+    if (!merged.some(existing => areMapsEqual(existing, manual))) {
+      merged.push(manual);
+    }
+  });
+
+  const refreshed = merged.map((map) => {
+    if (map.origin && !serverKeys.has(getMapKey(map))) {
+      return { ...map, unavailable: true };
+    }
+    return { ...map, unavailable: false };
+  });
+
+  inventoryMaps = refreshed;
+  saveInventory();
+
+  maps = maps.map((map) => {
+    if (map.origin && !serverKeys.has(getMapKey(map))) {
+      return { ...map, unavailable: true };
+    }
+    return { ...map, unavailable: false };
+  });
+  saveMaps();
+}
+
+async function refreshServerStatus() {
+  if (!refreshServerStatusBtn) return;
+  refreshServerStatusBtn.disabled = true;
+  setServerStatusMessage('Loading server status...', 'info');
+
+  try {
+    const response = await fetch('/api/cs/status', { credentials: 'include' });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Get server status', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Failed to load server status: ${response.status} ${errorMessage}`, 'error');
+      return;
+    }
+
+    if (body?.commandMode) {
+      if (body.commandMode === 'local-preview') {
+        setCsApiModeBadge('Preview mode', 'preview');
+        setCsApiModeWarning('WARNING: Commands are in local preview mode and are not executed. Set CS_SERVER_API_BASE_URL and/or DRY_RUN=false to use real server commands.');
+      } else {
+        setCsApiModeBadge('Live mode', 'live');
+        setCsApiModeWarning('');
+      }
+    } else {
+      setCsApiModeBadge('Unknown mode', 'warning');
+      setCsApiModeWarning('');
+    }
+
+    renderServerStatus(body);
+    setServerStatusMessage('Server status updated.', 'success');
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Get server status', null, { error: message });
+    setServerStatusMessage(`Status error: ${message}`, 'error');
+  } finally {
+    refreshServerStatusBtn.disabled = false;
+  }
+}
+
+async function changeServerMap(mapIdOverride) {
+  let mapId = typeof mapIdOverride === 'string'
+    ? mapIdOverride.trim()
+    : '';
+
+  if (!mapId) {
+    if (csApiMapSelect && csApiMapSelect.value) {
+      mapId = csApiMapSelect.value.trim();
+    } else if (csApiChangeMapInput) {
+      mapId = csApiChangeMapInput.value.trim();
+    }
+  }
+
+  if (!mapId) {
+    setServerStatusMessage('Map id is required.', 'error');
+    return false;
+  }
+
+  if (csApiChangeMapBtn) {
+    csApiChangeMapBtn.disabled = true;
+  }
+
+  try {
+    const response = await fetch('/api/cs/change-map', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mapId })
+    });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Change map', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Change map failed: ${response.status} ${errorMessage}`, 'error');
+      return false;
+    }
+
+    if (typeof mapIdOverride !== 'string' && csApiChangeMapInput) {
+      csApiChangeMapInput.value = '';
+    }
+
+    setServerStatusMessage(`Map change requested: ${mapId}`, 'success');
+    return true;
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Change map', null, { error: message });
+    setServerStatusMessage(`Change map error: ${message}`, 'error');
+    return false;
+  } finally {
+    if (csApiChangeMapBtn) {
+      csApiChangeMapBtn.disabled = false;
+    }
+  }
+}
+
+async function restartMatchApi() {
+  if (!csApiRestartMatchBtn) return;
+  csApiRestartMatchBtn.disabled = true;
+
+  try {
+    const response = await fetch('/api/cs/restart-match', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Restart match', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Restart match failed: ${response.status} ${errorMessage}`, 'error');
+      return;
+    }
+    setServerStatusMessage('Restart match requested.', 'success');
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Restart match', null, { error: message });
+    setServerStatusMessage(`Restart match error: ${message}`, 'error');
+  } finally {
+    if (csApiRestartMatchBtn) {
+      csApiRestartMatchBtn.disabled = false;
+    }
+  }
+}
+
+async function sendServerMessage(messageOverride) {
+  const message = (typeof messageOverride === 'string'
+    ? messageOverride.trim()
+    : csApiMessageInput?.value.trim() || '');
+
+  if (!message) {
+    setServerStatusMessage('Message text is required.', 'error');
+    return false;
+  }
+
+  if (csApiSendMessageBtn) {
+    csApiSendMessageBtn.disabled = true;
+  }
+
+  try {
+    const response = await fetch('/api/cs/send-message', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Send message', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Send message failed: ${response.status} ${errorMessage}`, 'error');
+      return false;
+    }
+
+    if (typeof messageOverride !== 'string' && csApiMessageInput) {
+      csApiMessageInput.value = '';
+    }
+
+    setServerStatusMessage('Server message sent.', 'success');
+    return true;
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Send message', null, { error: message });
+    setServerStatusMessage(`Send message error: ${message}`, 'error');
+    return false;
+  } finally {
+    if (csApiSendMessageBtn) {
+      csApiSendMessageBtn.disabled = false;
+    }
+  }
+}
+
+async function getCurrentMapcycle() {
+  if (!csApiGetMapcycleBtn) return;
+  csApiGetMapcycleBtn.disabled = true;
+  setCsApiMapcycleWarning('');
+
+  try {
+    const response = await fetch('/api/cs/mapcycle', { credentials: 'include' });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Get current mapcycle', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Get mapcycle failed: ${response.status} ${errorMessage}`, 'error');
+      return;
+    }
+
+    setServerStatusMessage('Current mapcycle fetched.', 'success');
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Get current mapcycle', null, { error: message });
+    setServerStatusMessage(`Get mapcycle error: ${message}`, 'error');
+  } finally {
+    csApiGetMapcycleBtn.disabled = false;
+  }
+}
+
+async function updateMapcycle() {
+  if (!csApiUpdateMapcycleBtn) return;
+  csApiUpdateMapcycleBtn.disabled = true;
+  setCsApiMapcycleWarning('');
+
+  const activeMaps = maps || [];
+  const workshopMaps = activeMaps.filter(map => map.type === 'workshop');
+  const invalidMaps = activeMaps.filter(map => map.type !== 'workshop' && !map.validForMapCycle);
+  const validMaps = activeMaps.filter(map => map.type !== 'workshop' && Boolean(map.validForMapCycle));
+
+  if (workshopMaps.length || invalidMaps.length) {
+    const warnings = [];
+    if (workshopMaps.length) {
+      warnings.push(`Skipped ${workshopMaps.length} WORKSHOP map(s) from update.`);
+    }
+    if (invalidMaps.length) {
+      warnings.push(`Skipped ${invalidMaps.length} map(s) not valid for mapcycle.`);
+    }
+    setCsApiMapcycleWarning(warnings.join(' '));
+  }
+
+  if (!validMaps.length) {
+    setServerStatusMessage('No valid active maps available for mapcycle update.', 'error');
+    csApiUpdateMapcycleBtn.disabled = false;
+    return;
+  }
+
+  const mapIds = validMaps.map(map => map.id || map.value || map.name).filter(Boolean);
+
+  try {
+    const response = await fetch('/api/cs/mapcycle', {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ maps: mapIds })
+    });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Update mapcycle', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Update mapcycle failed: ${response.status} ${errorMessage}`, 'error');
+      return;
+    }
+
+    setServerStatusMessage('Mapcycle updated successfully.', 'success');
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Update mapcycle', null, { error: message });
+    setServerStatusMessage(`Update mapcycle error: ${message}`, 'error');
+  } finally {
+    if (csApiUpdateMapcycleBtn) {
+      csApiUpdateMapcycleBtn.disabled = false;
+    }
+  }
+}
+
+async function execConfig(config, label) {
+  if (!config || !csApiWarmupBtn || !csApiOrdinaryBtn) return;
+  const button = label === 'wu' ? csApiWarmupBtn : csApiOrdinaryBtn;
+  button.disabled = true;
+
+  try {
+    const response = await fetch('/api/cs/exec-config', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config })
+    });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog(`Exec config ${config}`, response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Exec config failed: ${response.status} ${errorMessage}`, 'error');
+      return;
+    }
+
+    setServerStatusMessage(`Exec config requested: ${config}`, 'success');
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog(`Exec config ${config}`, null, { error: message });
+    setServerStatusMessage(`Exec config error: ${message}`, 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function refreshAvailableMaps() {
+  if (!refreshAvailableMapsBtn) return;
+  refreshAvailableMapsBtn.disabled = true;
+  setImportStatus('Refreshing available maps from server...', 'info');
+
+  try {
+    const response = await fetch('/api/cs/maps', { credentials: 'include' });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Get maps', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setImportStatus(`Failed to refresh maps: ${response.status} ${errorMessage}`, 'error');
+      return;
+    }
+
+    if (!Array.isArray(body)) {
+      setImportStatus('Server returned invalid map list.', 'error');
+      return;
+    }
+
+    updateAvailableMapsFromServer(body);
+    renderInventory();
+    renderMaps();
+    setImportStatus(`Refreshed ${body.length} map(s) from server.`, 'success');
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    setImportStatus(`Refresh error: ${message}`, 'error');
+  } finally {
+    refreshAvailableMapsBtn.disabled = false;
+  }
+}
+
+function clearAvailableMaps() {
+  if (!clearAvailableMapsBtn) return;
+  if (!confirm('Remove all maps from Available Maps?')) {
+    return;
+  }
+
+  inventoryMaps = [];
+  saveInventory();
+  renderInventory();
+  setImportStatus('Cleared all Available Maps.', 'success');
 }
 
 function saveCycle() {
@@ -143,22 +660,41 @@ function renderInventory() {
 
   inventoryList.innerHTML = inventoryMaps.map(map => {
     const selected = isSelectableMap(map);
-    const label = map.type === 'workshop'
-      ? 'Workshop ID: ' + map.value
+    const badgeType = map.type === 'workshop' ? 'WORKSHOP' : 'BUILTIN';
+    const badgeClass = map.type === 'workshop' ? 'workshop' : 'builtin';
+    const mapCycleNote = map.type === 'workshop'
+      ? '<div class="map-note">Workshop maps cannot be saved to mapcycle.</div>'
+      : '<div class="map-note">Builtin maps may be used in mapcycle.</div>';
+    const details = map.type === 'workshop'
+      ? `Workshop ID: ${map.value}`
       : 'Standard map';
+    const unavailableNote = map.unavailable
+      ? '<div class="map-note map-note-unavailable">This map is no longer available on the Farmor server.</div>'
+      : '';
+    const buttonDisabled = selected || map.unavailable ? 'disabled' : '';
+    const buttonLabel = map.unavailable ? 'Unavailable' : (selected ? 'Added' : 'Add');
 
     return `
       <div class="map-row">
-        <span>
-          <span class="map-name">${map.name}</span><br>
-          <small style="color: var(--muted)">${label}</small>
-        </span>
-        <button type="button" data-action="add-inventory" data-map="${map.name}" ${selected ? 'disabled' : ''}>
-          ${selected ? 'Added' : 'Add'}
+        <div class="map-row-left">
+          <div class="map-title-row">
+            <span class="map-name">${map.name}</span>
+            <span class="map-badge map-badge-${badgeClass}">${badgeType}</span>
+          </div>
+          <div class="map-meta">
+            <small>${details}</small>
+            ${mapCycleNote}
+            ${unavailableNote}
+          </div>
+        </div>
+        <button type="button" data-action="add-inventory" data-map="${map.name}" ${buttonDisabled}>
+          ${buttonLabel}
         </button>
       </div>
     `;
   }).join('');
+
+  renderAvailableMapOptions();
 }
 
 function renderMaps() {
@@ -174,15 +710,21 @@ function renderMaps() {
     const origin = map.source === 'inventory'
       ? '<span class="source-pill">Available on Farmor</span>'
       : '';
+    const unavailableNote = map.unavailable
+      ? '<div class="map-note map-note-unavailable">This map is no longer available on the Farmor server.</div>'
+      : '';
+    const addDisabled = map.unavailable ? 'disabled' : '';
+    const addLabel = map.unavailable ? 'Unavailable' : 'Add';
 
     return `
       <div class="map-row">
-        <span>
+        <div>
           <span class="map-name">${map.name}</span> ${origin}<br>
           <small style="color: var(--muted)">${map.type === 'workshop' ? 'Workshop ID: ' + map.value : 'Standard map'}</small>
-        </span>
+          ${unavailableNote}
+        </div>
         <div class="map-actions">
-          <button onclick="addMapToCycle('${map.name}')">Add</button>
+          <button onclick="addMapToCycle('${map.name}')" ${addDisabled}>${addLabel}</button>
           <button class="secondary" onclick="removeSelectableMap('${map.name}')">Remove</button>
         </div>
       </div>
@@ -220,6 +762,20 @@ function removeMap(index) {
   addCommand(`# Removed from tonight cycle: ${removed}`);
 }
 
+function clearMaps() {
+  if (!confirm('Remove all maps from the active list and clear the mapcycle?')) {
+    return;
+  }
+
+  maps = [];
+  cycle = [];
+  saveMaps();
+  saveCycle();
+  renderMaps();
+  renderCycle();
+  addCommand('# Cleared all selectable maps and mapcycle');
+}
+
 function clearCycle() {
   cycle = [];
   saveCycle();
@@ -235,18 +791,38 @@ function getMapCommand(mapName) {
     : `changelevel ${map.value}`;
 }
 
-function loadMap(map) {
-  document.getElementById('currentMap').textContent = map;
-  addCommand(getMapCommand(map));
+async function loadMap(map) {
+  const matched = maps.find(item => item.name === map);
+  let mapId = map;
+
+  if (matched) {
+    if (matched.type === 'workshop') {
+      mapId = matched.value.startsWith('workshop:')
+        ? matched.value
+        : `workshop:${matched.value}`;
+    } else {
+      mapId = matched.value || matched.name;
+    }
+  }
+
+  const success = await changeServerMap(mapId);
+  if (!success) {
+    return;
+  }
+
+  const currentMapEl = document.getElementById('currentMap');
+  if (currentMapEl) {
+    currentMapEl.textContent = map;
+  }
 }
 
-function loadNextMap() {
+async function loadNextMap() {
   if (!cycle.length) {
     addCommand('# No maps in tonight cycle');
     return;
   }
 
-  loadMap(cycle[0]);
+  await loadMap(cycle[0]);
 }
 
 function generateCycleCommands() {
@@ -259,14 +835,25 @@ function generateCycleCommands() {
   cycle.forEach((map, index) => addCommand(`# ${index + 1}. ${getMapCommand(map)}`));
 }
 
-function announceCycle() {
+async function announceCycle() {
   if (!cycle.length) {
     addCommand('# No maps selected for tonight\'s cycle');
     return;
   }
 
-  addCommand("say >>>>> TONIGHT'S MAP CYCLE <<<<<");
-  cycle.forEach((map, index) => addCommand(`say ${index + 1}. ${map}`));
+  const lines = [
+    '>>>>> TONIGHT\'S MAP CYCLE <<<<<',
+    ...cycle.map((map, index) => `${index + 1}. ${map}`)
+  ];
+
+  for (const line of lines) {
+    const success = await sendServerMessage(line);
+    if (!success) {
+      return;
+    }
+  }
+
+  setServerStatusMessage('Cycle announcement sent.', 'success');
 }
 
 function extractWorkshopId(value) {
@@ -477,6 +1064,55 @@ if (inventoryList) {
   });
 }
 
+const clearMapsBtn = document.getElementById('clearMapsBtn');
+if (clearMapsBtn) {
+  clearMapsBtn.addEventListener('click', clearMaps);
+}
+
+if (refreshAvailableMapsBtn) {
+  refreshAvailableMapsBtn.addEventListener('click', refreshAvailableMaps);
+}
+
+if (clearAvailableMapsBtn) {
+  clearAvailableMapsBtn.addEventListener('click', clearAvailableMaps);
+}
+
+if (refreshServerStatusBtn) {
+  refreshServerStatusBtn.addEventListener('click', refreshServerStatus);
+}
+
+if (csApiMapSelect) {
+  csApiMapSelect.addEventListener('change', syncSelectedMapToInput);
+}
+
+if (csApiChangeMapBtn) {
+  csApiChangeMapBtn.addEventListener('click', changeServerMap);
+}
+
+if (csApiRestartMatchBtn) {
+  csApiRestartMatchBtn.addEventListener('click', restartMatchApi);
+}
+
+if (csApiSendMessageBtn) {
+  csApiSendMessageBtn.addEventListener('click', sendServerMessage);
+}
+
+if (csApiGetMapcycleBtn) {
+  csApiGetMapcycleBtn.addEventListener('click', getCurrentMapcycle);
+}
+
+if (csApiUpdateMapcycleBtn) {
+  csApiUpdateMapcycleBtn.addEventListener('click', updateMapcycle);
+}
+
+if (csApiWarmupBtn) {
+  csApiWarmupBtn.addEventListener('click', () => execConfig('wu.cfg', 'wu'));
+}
+
+if (csApiOrdinaryBtn) {
+  csApiOrdinaryBtn.addEventListener('click', () => execConfig('owu.cfg', 'owu'));
+}
+
 updatePauseButton();
 
 function toggleAnnouncementInput() {
@@ -493,17 +1129,19 @@ function toggleAnnouncementInput() {
   }
 }
 
-function sendAnnouncement() {
+async function sendAnnouncement() {
   const input = document.getElementById('announcementInput');
   const message = input.value.trim();
 
   if (!message) {
-    addCommand('# Announcement message cannot be empty');
+    setServerStatusMessage('Announcement message cannot be empty.', 'error');
     return;
   }
 
-  const command = `say ${message}`;
-  addCommand(command);
+  const success = await sendServerMessage(message);
+  if (!success) {
+    return;
+  }
 
   input.value = '';
   const wrapper = document.getElementById('announcementWrapper');

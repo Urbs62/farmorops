@@ -14,6 +14,7 @@
     </div>
     <div class="header-actions">
       <div class="server-pill">Server: <strong>Farmor</strong> · CS2 · Online</div>
+      <a href="/cs-api-test.html" class="secondary">CS API Test</a>
       <form method="POST" action="/logout">
         <button type="submit" class="secondary">Logout</button>
       </form>
@@ -28,6 +29,7 @@
             <h2>Maps</h2>
             <span>Choose maps for tonight's map cycle</span>
           </div>
+          <button id="clearMapsBtn" class="secondary">Clear Maps</button>
         </div>
         <div class="card-body">
           <input class="search" id="mapSearch" placeholder="Search map, e.g. mirage..." />
@@ -73,47 +75,83 @@
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Server status</h2>
-            <span>Mock data in the first version</span>
+            <h2>Server Control</h2>
+            <span>Manual CS API commands and status checks.</span>
           </div>
-          <button class="secondary" onclick="addCommand('status')">Refresh status</button>
+          <div class="header-actions-right">
+            <span id="csApiModeBadge" class="mode-badge">Mode unknown</span>
+            <button class="secondary" id="refreshServerStatusBtn">Get Server Status</button>
+          </div>
         </div>
         <div class="card-body">
           <div class="current-grid">
             <div class="metric">
               <label>Current map</label>
-              <strong id="currentMap">de_mirage</strong>
+              <strong id="csApiCurrentMap">—</strong>
+            </div>
+            <div class="metric">
+              <label>Status</label>
+              <strong id="csApiOnlineStatus">Unknown</strong>
             </div>
             <div class="metric">
               <label>Players</label>
-              <strong>7 / 12</strong>
-            </div>
-            <div class="metric">
-              <label>Bots</label>
-              <strong id="botMetric">2</strong>
+              <strong id="csApiPlayerCount">0 / 0</strong>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <h2>Server control</h2>
-            <span>Server actions</span>
+          <div class="status-note">
+            Bots are not listed by the API. steamId is currently null.
           </div>
-        </div>
-        <div class="card-body">
+          <div class="status-note warning" id="csApiModeWarning"></div>
+
+          <div class="player-section">
+            <label>Connected players</label>
+            <div class="player-list" id="csApiPlayerList">No players connected.</div>
+          </div>
+
+          <div class="server-control-form">
+            <div class="button-group">
+              <button class="secondary" id="csApiGetMapcycleBtn">Get current mapcycle</button>
+              <button class="secondary" id="csApiUpdateMapcycleBtn">Update mapcycle</button>
+            </div>
+            <div id="csApiMapcycleWarning" class="map-note"></div>
+          </div>
+
+          <div class="server-control-form">
+            <label for="csApiMapSelect">Select imported map</label>
+            <div class="input-row">
+              <select id="csApiMapSelect">
+                <option value="">Choose an available map</option>
+              </select>
+              <button id="csApiChangeMapBtn">Change Map</button>
+            </div>
+          </div>
+
+          <div class="server-control-form">
+            <label>Exec config</label>
+            <div class="button-group">
+              <button class="secondary" id="csApiWarmupBtn">Warmup forever (wu.cfg)</button>
+              <button class="secondary" id="csApiOrdinaryBtn">Start ordinary match (owu.cfg)</button>
+            </div>
+          </div>
+
+          <div class="server-control-form">
+            <label for="csApiMessageInput">Send server message</label>
+            <div class="input-row">
+              <input id="csApiMessageInput" type="text" placeholder="Enter announcement text" />
+              <button id="csApiSendMessageBtn">Send</button>
+            </div>
+          </div>
+
           <div class="actions">
-            <button class="action-button danger" onclick="addCommand('server_restart')">
-              Restart server
-              <small>server_restart</small>
-            </button>
-            <button class="action-button secondary" onclick="addCommand('server_update')">
-              Update server
-              <small>server_update</small>
+            <button class="action-button danger" id="csApiRestartMatchBtn">
+              Restart match
+              <small>RESTART_MATCH</small>
             </button>
           </div>
+
+          <div id="csApiResponseLog" class="console">API responses will appear here.</div>
+          <div id="csApiStatusMessage" class="input-error" aria-live="polite"></div>
         </div>
       </section>
 
@@ -145,7 +183,7 @@
         </div>
         <div class="card-body">
           <div class="actions">
-            <button class="action-button" onclick="addCommand('mp_restartgame 1')">
+            <button class="action-button" onclick="restartMatchApi()">
               Restart match
               <small>mp_restartgame 1</small>
             </button>
@@ -258,11 +296,16 @@
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Available on Farmor</h2>
-            <span>Maps downloaded on Farmor. Add maps here to make them selectable for game nights.</span>
+            <h2>Available Maps</h2>
+            <span>Available maps on Farmor. Refresh or clear the list here.</span>
+          </div>
+          <div class="button-group">
+            <button id="refreshAvailableMapsBtn" class="secondary">Refresh Available Maps</button>
+            <button id="clearAvailableMapsBtn" class="secondary">Clear Available Maps</button>
           </div>
         </div>
         <div class="card-body">
+          <div id="importStatus" class="input-error" aria-live="polite"></div>
           <div class="map-list" id="inventoryList"></div>
         </div>
       </section>

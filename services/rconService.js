@@ -11,6 +11,21 @@ async function executeCommand(command) {
   }
 
   const conn = await Rcon.connect({ host: RCON_HOST, port: RCON_PORT, password: RCON_PASSWORD });
+  const onError = (err) => {
+    console.error('[RCON] socket error:', err && err.message ? err.message : err);
+  };
+  const cleanup = () => {
+    try {
+      conn.off('error', onError);
+    } catch (_) {
+      // ignore cleanup failures
+    }
+  };
+
+  conn.on('error', onError);
+  conn.once('end', cleanup);
+  conn.once('error', cleanup);
+
   try {
     const result = await Promise.race([
       conn.send(command),
