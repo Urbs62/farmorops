@@ -7,14 +7,25 @@ const csServerService = require('./services/csServerService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const CS_SERVER_API_BASE_URL = process.env.CS_SERVER_API_BASE_URL || 'https://mkbi.chickenkiller.com:27999';
+const isProduction = process.env.NODE_ENV === 'production';
+const ENABLE_LEGACY_COMMANDS = process.env.ENABLE_LEGACY_COMMANDS === 'true';
+const CS_SERVER_API_BASE_URL = process.env.CS_SERVER_API_BASE_URL || process.env.CS_SERVER_BASE_URL || '';
+const CS_SERVER_API_KEY = process.env.CS_SERVER_API_KEY || '';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const SESSION_SECRET = process.env.SESSION_SECRET || '';
 
-if (!ADMIN_USERNAME || !ADMIN_PASSWORD || !SESSION_SECRET) {
-  console.warn('WARNING: ADMIN_USERNAME, ADMIN_PASSWORD, and SESSION_SECRET must be set in .env for login to work.');
+const missingEnvVars = [];
+if (!ADMIN_USERNAME.trim()) missingEnvVars.push('ADMIN_USERNAME');
+if (!ADMIN_PASSWORD.trim()) missingEnvVars.push('ADMIN_PASSWORD');
+if (!SESSION_SECRET.trim()) missingEnvVars.push('SESSION_SECRET');
+if (!CS_SERVER_API_BASE_URL.trim()) missingEnvVars.push('CS_SERVER_API_BASE_URL or CS_SERVER_BASE_URL');
+if (!CS_SERVER_API_KEY.trim()) missingEnvVars.push('CS_SERVER_API_KEY');
+
+if (missingEnvVars.length) {
+  console.error(`ERROR: Missing required env var(s): ${missingEnvVars.join(', ')}`);
+  process.exit(1);
 }
 
 const USE_REMOTE_CS_API = Boolean(CS_SERVER_API_BASE_URL && CS_SERVER_API_BASE_URL.trim());
@@ -47,12 +58,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(
   session({
-    secret: SESSION_SECRET || 'change-this-secret',
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      secure: isProduction
     }
   })
 );
@@ -64,10 +76,6 @@ function isAuthenticated(req) {
 function requireAuth(req, res, next) {
   if (isAuthenticated(req)) {
     return next();
-  }
-
-  if (req.method === 'GET') {
-    return res.redirect('/login');
   }
 
   return res.status(401).json({ error: 'Unauthorized' });
@@ -110,6 +118,24 @@ app.use((req, res, next) => {
     }
   }
   next();
+});
+
+app.get('/CLIENT_API.md', (req, res) => {
+  if (!isAuthenticated(req)) {
+    return res.redirect('/login');
+  }
+  res.sendFile(path.join(__dirname, 'docs', 'CLIENT_API.md'));
+});
+
+app.get('/cs-api-test.html', (req, res) => {
+  if (isProduction) {
+    return res.status(404).end();
+  }
+
+  if (!isAuthenticated(req)) {
+    return res.redirect('/login');
+  }
+  res.sendFile(path.join(__dirname, 'docs', 'cs-api-test.html'));
 });
 
 app.use(express.static(path.join(__dirname, 'docs')));
@@ -284,6 +310,10 @@ function buildRconCommand(action, payload) {
 }
 
 app.post('/api/command', (req, res) => {
+  if (isProduction && !ENABLE_LEGACY_COMMANDS) {
+    return res.status(403).json({ error: 'Legacy command endpoint is disabled in production.' });
+  }
+
   const { action, payload } = req.body || {};
 
   if (typeof action !== 'string' || !action.trim()) {
