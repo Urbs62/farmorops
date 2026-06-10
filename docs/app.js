@@ -1,7 +1,13 @@
 const STORAGE_KEYS = {
   selectableMaps: 'farmorops_selectable_maps_v1',
   inventory: 'farmorops_inventory_maps_v1',
-  cycle: 'farmorops.mapCycle'
+  cycle: 'farmorops.mapCycle',
+  compactMode: 'farmorops.compactMode',
+  diagnosticsCollapsed: 'farmorops.diagnosticsCollapsed',
+  availableCollapsed: 'farmorops.availableCollapsed',
+  selectCollapsed: 'farmorops.selectCollapsed',
+  libraryCollapsed: 'farmorops.libraryCollapsed',
+  availableFilter: 'farmorops.availableFilter'
 };
 
 const defaultMaps = [];
@@ -31,11 +37,16 @@ function fetchAvailableInventory() {
 let maps = loadStoredMaps();
 let inventoryMaps = loadStoredInventory();
 let cycle = loadStoredCycle();
+let availableFilter = readStorage(STORAGE_KEYS.availableFilter, 'all');
+if (!['all', 'standard', 'workshop'].includes(availableFilter)) {
+  availableFilter = 'all';
+}
 let consoleLines = [];
 let matchPaused = false;
 
 const mapList = document.getElementById('mapList');
 const inventoryList = document.getElementById('inventoryList');
+const availableFilterButtons = document.getElementById('availableFilterButtons');
 const cycleList = document.getElementById('cycleList');
 const consoleBox = document.getElementById('console');
 const mapSearch = document.getElementById('mapSearch');
@@ -58,9 +69,18 @@ const csApiGetMapcycleBtn = document.getElementById('csApiGetMapcycleBtn');
 const csApiUpdateMapcycleBtn = document.getElementById('csApiUpdateMapcycleBtn');
 const csApiWarmupBtn = document.getElementById('csApiWarmupBtn');
 const csApiOrdinaryBtn = document.getElementById('csApiOrdinaryBtn');
-const csApiRestartMatchBtn = document.getElementById('csApiRestartMatchBtn');
+const csApiRestartMatchBtn = document.getElementById('csApiRestartMatchBtn') || document.getElementById('restartMatchBtn');
 const csApiMessageInput = document.getElementById('csApiMessageInput');
 const csApiSendMessageBtn = document.getElementById('csApiSendMessageBtn');
+const compactModeToggle = document.getElementById('compactModeToggle');
+const diagnosticsToggle = document.getElementById('diagnosticsToggle');
+const diagnosticsContent = document.getElementById('diagnosticsContent');
+const availableToggle = document.getElementById('availableToggle') || document.getElementById('availableMapsToggle');
+const availableContent = document.getElementById('availableContent') || document.getElementById('availableMapsContent');
+const selectToggle = document.getElementById('selectToggle');
+const selectContent = document.getElementById('selectContent');
+const libraryToggle = document.getElementById('libraryToggle');
+const libraryContent = document.getElementById('libraryContent');
 
 function readStorage(key, fallback) {
   try {
@@ -77,6 +97,133 @@ function writeStorage(key, value) {
   } catch (error) {
     addCommand('# Could not save changes to localStorage');
   }
+}
+
+function loadCompactMode() {
+  return readStorage(STORAGE_KEYS.compactMode, false) === true;
+}
+
+function applyCompactMode(enabled) {
+  document.body.classList.toggle('compact-mode', enabled);
+  if (compactModeToggle) {
+    compactModeToggle.checked = enabled;
+  }
+}
+
+function setCompactMode(enabled) {
+  applyCompactMode(enabled);
+  writeStorage(STORAGE_KEYS.compactMode, enabled);
+}
+
+function loadDiagnosticsCollapsed() {
+  const saved = readStorage(STORAGE_KEYS.diagnosticsCollapsed, null);
+  return saved === true ? true : saved === false ? false : null;
+}
+
+function applyDiagnosticsCollapsed(collapsed) {
+  if (diagnosticsContent) {
+    diagnosticsContent.classList.toggle('collapsed', collapsed);
+  }
+  if (diagnosticsToggle) {
+    diagnosticsToggle.checked = collapsed;
+  }
+}
+
+function setDiagnosticsCollapsed(collapsed) {
+  applyDiagnosticsCollapsed(collapsed);
+  writeStorage(STORAGE_KEYS.diagnosticsCollapsed, collapsed);
+}
+
+function initializeDiagnosticsState() {
+  const saved = loadDiagnosticsCollapsed();
+  if (saved !== null) {
+    applyDiagnosticsCollapsed(saved);
+    return;
+  }
+
+  const compactModeActive = loadCompactMode();
+  applyDiagnosticsCollapsed(compactModeActive);
+}
+
+function loadAvailableCollapsed() {
+  const saved = readStorage(STORAGE_KEYS.availableCollapsed, null);
+  return saved === true ? true : saved === false ? false : null;
+}
+
+function applyAvailableCollapsed(collapsed) {
+  if (!availableContent) return;
+  availableContent.classList.toggle('collapsed', collapsed);
+  if (availableToggle) availableToggle.checked = collapsed;
+}
+
+function setAvailableCollapsed(collapsed) {
+  applyAvailableCollapsed(collapsed);
+  writeStorage(STORAGE_KEYS.availableCollapsed, collapsed);
+}
+
+function initializeAvailableState() {
+  const saved = loadAvailableCollapsed();
+  if (saved !== null) {
+    applyAvailableCollapsed(saved);
+    return;
+  }
+
+  const compactModeActive = loadCompactMode();
+  applyAvailableCollapsed(Boolean(compactModeActive));
+}
+
+function loadSelectCollapsed() {
+  const saved = readStorage(STORAGE_KEYS.selectCollapsed, null);
+  return saved === true ? true : saved === false ? false : null;
+}
+
+function applySelectCollapsed(collapsed) {
+  if (!selectContent) return;
+  selectContent.classList.toggle('collapsed', collapsed);
+  if (selectToggle) selectToggle.checked = collapsed;
+}
+
+function setSelectCollapsed(collapsed) {
+  applySelectCollapsed(collapsed);
+  writeStorage(STORAGE_KEYS.selectCollapsed, collapsed);
+}
+
+function initializeSelectState() {
+  const saved = loadSelectCollapsed();
+  if (saved !== null) {
+    applySelectCollapsed(saved);
+    return;
+  }
+
+  const compactModeActive = loadCompactMode();
+  applySelectCollapsed(Boolean(compactModeActive));
+}
+
+function loadLibraryCollapsed() {
+  const saved = readStorage(STORAGE_KEYS.libraryCollapsed, null);
+  return saved === true ? true : saved === false ? false : null;
+}
+
+function applyLibraryCollapsed(collapsed) {
+  if (!libraryContent) return;
+  libraryContent.classList.toggle('collapsed', collapsed);
+  if (libraryToggle) libraryToggle.checked = collapsed;
+}
+
+function setLibraryCollapsed(collapsed) {
+  applyLibraryCollapsed(collapsed);
+  writeStorage(STORAGE_KEYS.libraryCollapsed, collapsed);
+}
+
+function initializeLibraryState() {
+  const saved = loadLibraryCollapsed();
+  if (saved !== null) {
+    applyLibraryCollapsed(saved);
+    return;
+  }
+
+  const compactModeActive = loadCompactMode();
+  applyLibraryCollapsed(Boolean(compactModeActive));
 }
 
 function isValidMap(map) {
@@ -198,6 +345,14 @@ function renderServerStatus(status) {
 
 function getMapKey(map) {
   return map.id || map.value || map.name || '';
+}
+
+function getAvailableMapSourceType(map) {
+  if (map?.origin === 'WORKSHOP' || map?.source === 'WORKSHOP' || map?.type === 'workshop') {
+    return 'workshop';
+  }
+
+  return 'standard';
 }
 
 function normalizeServerMap(map) {
@@ -655,10 +810,69 @@ function removeSelectableMap(mapName) {
   }
 }
 
+function getAvailableFilterCounts() {
+  return {
+    all: inventoryMaps.length,
+    standard: inventoryMaps.filter(map => getAvailableMapSourceType(map) === 'standard').length,
+    workshop: inventoryMaps.filter(map => getAvailableMapSourceType(map) === 'workshop').length
+  };
+}
+
+function getFilteredInventoryMaps() {
+  if (availableFilter === 'standard') {
+    return inventoryMaps.filter(map => getAvailableMapSourceType(map) === 'standard');
+  }
+
+  if (availableFilter === 'workshop') {
+    return inventoryMaps.filter(map => getAvailableMapSourceType(map) === 'workshop');
+  }
+
+  return inventoryMaps;
+}
+
+function renderAvailableFilterButtons() {
+  if (!availableFilterButtons) return;
+
+  const counts = getAvailableFilterCounts();
+  const buttons = [
+    { key: 'all', label: 'All', count: counts.all },
+    { key: 'standard', label: 'Standard', count: counts.standard },
+    { key: 'workshop', label: 'Workshop', count: counts.workshop }
+  ];
+
+  availableFilterButtons.innerHTML = buttons.map(button => `
+    <button
+      type="button"
+      class="filter-chip${availableFilter === button.key ? ' active' : ''}"
+      data-filter="${button.key}"
+      aria-pressed="${availableFilter === button.key}"
+    >
+      ${button.label} <span>(${button.count})</span>
+    </button>
+  `).join('');
+}
+
+function setAvailableFilter(filter) {
+  const nextFilter = filter === 'standard' || filter === 'workshop' ? filter : 'all';
+  availableFilter = nextFilter;
+  writeStorage(STORAGE_KEYS.availableFilter, availableFilter);
+  renderAvailableFilterButtons();
+  renderInventory();
+}
+
 function renderInventory() {
   if (!inventoryList) return;
 
-  inventoryList.innerHTML = inventoryMaps.map(map => {
+  const filteredMaps = getFilteredInventoryMaps();
+
+  if (!filteredMaps.length) {
+    inventoryList.innerHTML = '<div class="empty">No maps match the selected source filter.</div>';
+    renderAvailableFilterButtons();
+    renderAvailableMapOptions();
+    return;
+  }
+
+  inventoryList.innerHTML = filteredMaps.map(map => {
     const selected = isSelectableMap(map);
     const badgeType = map.type === 'workshop' ? 'WORKSHOP' : 'BUILTIN';
     const badgeClass = map.type === 'workshop' ? 'workshop' : 'builtin';
@@ -694,6 +908,7 @@ function renderInventory() {
     `;
   }).join('');
 
+  renderAvailableFilterButtons();
   renderAvailableMapOptions();
 }
 
@@ -718,10 +933,15 @@ function renderMaps() {
 
     return `
       <div class="map-row">
-        <div>
-          <span class="map-name">${map.name}</span> ${origin}<br>
-          <small style="color: var(--muted)">${map.type === 'workshop' ? 'Workshop ID: ' + map.value : 'Standard map'}</small>
-          ${unavailableNote}
+        <div class="map-row-left">
+          <div class="map-title-row">
+            <span class="map-name">${map.name}</span>
+            ${origin}
+          </div>
+          <div class="map-meta">
+            <small>${map.type === 'workshop' ? 'Workshop ID: ' + map.value : 'Standard map'}</small>
+            ${unavailableNote}
+          </div>
         </div>
         <div class="map-actions">
           <button onclick="addMapToCycle('${map.name}')" ${addDisabled}>${addLabel}</button>
@@ -734,7 +954,7 @@ function renderMaps() {
 
 function renderCycle() {
   if (!cycle.length) {
-    cycleList.innerHTML = '<div class="empty">No maps selected yet. Add maps from the list on the left.</div>';
+    cycleList.innerHTML = '<div class="empty">No maps selected yet. Add maps from the list above.</div>';
     return;
   }
 
@@ -1064,6 +1284,14 @@ if (inventoryList) {
   });
 }
 
+if (availableFilterButtons) {
+  availableFilterButtons.addEventListener('click', event => {
+    const button = event.target.closest('button[data-filter]');
+    if (!button) return;
+    setAvailableFilter(button.dataset.filter);
+  });
+}
+
 const clearMapsBtn = document.getElementById('clearMapsBtn');
 if (clearMapsBtn) {
   clearMapsBtn.addEventListener('click', clearMaps);
@@ -1096,6 +1324,58 @@ if (csApiRestartMatchBtn) {
 if (csApiSendMessageBtn) {
   csApiSendMessageBtn.addEventListener('click', sendServerMessage);
 }
+
+if (compactModeToggle) {
+  compactModeToggle.addEventListener('change', (event) => {
+    setCompactMode(event.target.checked);
+    const savedDiag = loadDiagnosticsCollapsed();
+    if (savedDiag === null && event.target.checked) {
+      applyDiagnosticsCollapsed(true);
+    }
+    const savedAvail = loadAvailableCollapsed();
+    if (savedAvail === null && event.target.checked) {
+      applyAvailableCollapsed(true);
+    }
+    const savedSelect = loadSelectCollapsed();
+    if (savedSelect === null && event.target.checked) {
+      applySelectCollapsed(true);
+    }
+    const savedLibrary = loadLibraryCollapsed();
+    if (savedLibrary === null && event.target.checked) {
+      applyLibraryCollapsed(true);
+    }
+  });
+}
+
+if (diagnosticsToggle) {
+  diagnosticsToggle.addEventListener('change', (event) => {
+    setDiagnosticsCollapsed(event.target.checked);
+  });
+}
+
+if (availableToggle) {
+  availableToggle.addEventListener('change', (event) => {
+    setAvailableCollapsed(event.target.checked);
+  });
+}
+
+if (selectToggle) {
+  selectToggle.addEventListener('change', (event) => {
+    setSelectCollapsed(event.target.checked);
+  });
+}
+
+if (libraryToggle) {
+  libraryToggle.addEventListener('change', (event) => {
+    setLibraryCollapsed(event.target.checked);
+  });
+}
+
+setCompactMode(loadCompactMode());
+initializeDiagnosticsState();
+initializeAvailableState();
+initializeSelectState();
+initializeLibraryState();
 
 if (csApiGetMapcycleBtn) {
   csApiGetMapcycleBtn.addEventListener('click', getCurrentMapcycle);

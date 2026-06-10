@@ -14,6 +14,10 @@
     </div>
     <div class="header-actions">
       <div class="server-pill">Server: <strong>Farmor</strong> · CS2 · Online</div>
+      <label class="compact-toggle">
+        <input type="checkbox" id="compactModeToggle" />
+        Compact mode
+      </label>
       <a href="/cs-api-test.html" class="secondary">CS API Test</a>
       <form method="POST" action="/logout">
         <button type="submit" class="secondary">Logout</button>
@@ -26,57 +30,8 @@
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Maps</h2>
-            <span>Choose maps for tonight's map cycle</span>
-          </div>
-          <button id="clearMapsBtn" class="secondary">Clear Maps</button>
-        </div>
-        <div class="card-body">
-          <input class="search" id="mapSearch" placeholder="Search map, e.g. mirage..." />
-          <div class="map-list" id="mapList"></div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <h2>Map library</h2>
-            <span>Add a standard or Workshop map</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="library-form">
-            <div class="form-grid">
-              <select id="mapType" onchange="updateNewMapPreview()">
-                <option value="standard">Standard map</option>
-                <option value="workshop">Steam Workshop map</option>
-              </select>
-              <input type="text" id="newMapName" placeholder="Display name, t.ex. awp_lego_2" oninput="updateNewMapPreview()" />
-            </div>
-
-            <input type="text" id="newMapValue" placeholder="Map name eller Steam Workshop-länk/ID" oninput="updateNewMapPreview()" />
-
-            <div class="hint">
-              Standardbanor använder <strong>changelevel mapname</strong>. Workshop-banor använder normalt <strong>host_workshop_map workshopId</strong>. I MVP sparas detta bara i webbsidan/mockupen.
-            </div>
-
-            <div class="command-preview" id="newMapCommand"># Command preview</div>
-
-            <div class="toolbar">
-              <button onclick="addMapToLibrary()">Add to map list</button>
-              <button class="secondary" onclick="updateNewMapPreview()">Preview command</button>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <div class="layout-right">
-      <section class="card">
-        <div class="card-header">
-          <div>
             <h2>Server Control</h2>
-            <span>Manual CS API commands and status checks.</span>
+            <span>Server-level operations and status.</span>
           </div>
           <div class="header-actions-right">
             <span id="csApiModeBadge" class="mode-badge">Mode unknown</span>
@@ -99,9 +54,7 @@
             </div>
           </div>
 
-          <div class="status-note">
-            Bots are not listed by the API. steamId is currently null.
-          </div>
+          <div class="status-note">Bots are not listed by the API. steamId is currently null.</div>
           <div class="status-note warning" id="csApiModeWarning"></div>
 
           <div class="player-section">
@@ -117,73 +70,22 @@
             <div id="csApiMapcycleWarning" class="map-note"></div>
           </div>
 
-          <div class="server-control-form">
-            <label for="csApiMapSelect">Select imported map</label>
-            <div class="input-row">
-              <select id="csApiMapSelect">
-                <option value="">Choose an available map</option>
-              </select>
-              <button id="csApiChangeMapBtn">Change Map</button>
-            </div>
-          </div>
-
-          <div class="server-control-form">
-            <label>Exec config</label>
-            <div class="button-group">
-              <button class="secondary" id="csApiWarmupBtn">Warmup forever (wu.cfg)</button>
-              <button class="secondary" id="csApiOrdinaryBtn">Start ordinary match (owu.cfg)</button>
-            </div>
-          </div>
-
-          <div class="server-control-form">
-            <label for="csApiMessageInput">Send server message</label>
-            <div class="input-row">
-              <input id="csApiMessageInput" type="text" placeholder="Enter announcement text" />
-              <button id="csApiSendMessageBtn">Send</button>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="action-button danger" id="csApiRestartMatchBtn">
-              Restart match
-              <small>RESTART_MATCH</small>
-            </button>
-          </div>
-
-          <div id="csApiResponseLog" class="console">API responses will appear here.</div>
           <div id="csApiStatusMessage" class="input-error" aria-live="polite"></div>
         </div>
       </section>
+    </div>
 
+    <div class="layout-right">
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Tonight's map cycle</h2>
-            <span>Order can be controlled later with drag-and-drop</span>
-          </div>
-          <button class="secondary" onclick="clearCycle()">Clear</button>
-        </div>
-        <div class="card-body">
-          <div class="cycle-list" id="cycleList"></div>
-          <div class="toolbar">
-            <button onclick="loadNextMap()">Load next map</button>
-            <button class="secondary" onclick="generateCycleCommands()">Generate cycle commands</button>
-            <button class="secondary" onclick="announceCycle()">Announce cycle</button>
-            <button class="secondary" onclick="copyConsole()">Copy commands</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <h2>Match control</h2>
-            <span>Common buttons for game night</span>
+            <h2>Game Control</h2>
+            <span>Match and game-level actions.</span>
           </div>
         </div>
         <div class="card-body">
           <div class="actions">
-            <button class="action-button" onclick="restartMatchApi()">
+            <button class="action-button danger" onclick="restartMatchApi()" id="restartMatchBtn">
               Restart match
               <small>mp_restartgame 1</small>
             </button>
@@ -194,14 +96,6 @@
             <button class="action-button secondary" onclick="addCommand('bot_kick')">
               Kick bots
               <small>bot_kick</small>
-            </button>
-            <button class="action-button ghost" onclick="addCommand('say Feature placeholder 1')">
-              Future 1
-              <small>placeholder</small>
-            </button>
-            <button class="action-button ghost" onclick="addCommand('say Feature placeholder 2')">
-              Future 2
-              <small>placeholder</small>
             </button>
           </div>
 
@@ -229,30 +123,31 @@
             </div>
             <div class="input-error" id="balanceMessage" aria-live="polite"></div>
           </div>
-        </div>
-      </section>
 
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <h2>Game Control</h2>
-            <span>Server game announcements and controls</span>
+          <div class="server-control-form">
+            <label>Exec config</label>
+            <div class="button-group">
+              <button class="secondary" id="csApiWarmupBtn">Warmup forever (wu.cfg)</button>
+              <button class="secondary" id="csApiOrdinaryBtn">Start ordinary match (owu.cfg)</button>
+            </div>
           </div>
-        </div>
-        <div class="card-body">
-          <div class="actions">
-            <button class="action-button" onclick="toggleAnnouncementInput()">
-              Announcement
-              <small>say &lt;message&gt;</small>
-            </button>
-            <button class="action-button sudden-death" onclick="initiateSuddenDeath()">
-              Sudden Death
-              <small>mp_maxrounds 1</small>
-            </button>
-            <button class="action-button ghost">
-              Future 2
-              <small>placeholder</small>
-            </button>
+
+          <div class="server-control-form">
+            <label for="csApiMapSelect">Select imported map</label>
+            <div class="input-row">
+              <select id="csApiMapSelect">
+                <option value="">Choose an available map</option>
+              </select>
+              <button id="csApiChangeMapBtn">Change Map</button>
+            </div>
+          </div>
+
+          <div class="server-control-form">
+            <label for="csApiMessageInput">Send server message</label>
+            <div class="input-row">
+              <input id="csApiMessageInput" type="text" placeholder="Enter announcement text" />
+              <button id="csApiSendMessageBtn">Send</button>
+            </div>
           </div>
 
           <div class="control-row sudden-death-settings">
@@ -277,39 +172,153 @@
             />
             <button onclick="sendAnnouncement()">Send</button>
           </div>
+
+          <div class="actions">
+            <button class="action-button sudden-death" onclick="initiateSuddenDeath()">
+              Sudden Death
+              <small>mp_maxrounds 1</small>
+            </button>
+          </div>
         </div>
       </section>
 
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>RCON command preview</h2>
-            <span>First MVP: just print command strings</span>
+            <h2>Tonight's Map Cycle</h2>
+            <span>Currently selected maps for tonight.</span>
           </div>
-          <button class="danger" onclick="clearConsole()">Clear log</button>
+          <button class="secondary" onclick="clearCycle()">Clear Cycle</button>
         </div>
         <div class="card-body">
-          <div class="console" id="console"># Commands will appear here...</div>
+          <div class="cycle-list" id="cycleList"></div>
+          <div class="toolbar">
+            <button onclick="loadNextMap()">Load next map</button>
+            <button class="secondary" onclick="generateCycleCommands()">Generate cycle commands</button>
+            <button class="secondary" onclick="announceCycle()">Announce cycle</button>
+            <button class="secondary" onclick="copyConsole()">Copy commands</button>
+          </div>
         </div>
       </section>
 
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Available Maps</h2>
-            <span>Available maps on Farmor. Refresh or clear the list here.</span>
+            <h2>Select maps to tonight's mapcycle</h2>
+            <span>Choose and add maps to the selected map cycle.</span>
           </div>
+          <div class="diagnostics-actions">
+            <button id="clearMapsBtn" class="secondary">Clear Maps</button>
+            <label class="compact-toggle">
+              <input type="checkbox" id="selectToggle" />
+              Collapse
+            </label>
+          </div>
+        </div>
+        <div class="card-body select-content" id="selectContent">
+          <input class="search" id="mapSearch" placeholder="Search map, e.g. mirage..." />
+          <div class="map-list" id="mapList"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Map Library</h2>
+            <span>Add a standard or Workshop map.</span>
+          </div>
+          <label class="compact-toggle">
+            <input type="checkbox" id="libraryToggle" />
+            Collapse
+          </label>
+        </div>
+        <div class="card-body library-content" id="libraryContent">
+          <div class="library-form">
+            <div class="form-grid">
+              <select id="mapType" onchange="updateNewMapPreview()">
+                <option value="standard">Standard map</option>
+                <option value="workshop">Steam Workshop map</option>
+              </select>
+              <input type="text" id="newMapName" placeholder="Display name, t.ex. awp_lego_2" oninput="updateNewMapPreview()" />
+            </div>
+
+            <input type="text" id="newMapValue" placeholder="Map name eller Steam Workshop-länk/ID" oninput="updateNewMapPreview()" />
+
+            <div class="hint">
+              Standardbanor använder <strong>changelevel mapname</strong>. Workshop-banor använder normalt <strong>host_workshop_map workshopId</strong>. I MVP sparas detta bara i webbsidan/mockupen.
+            </div>
+
+            <div class="command-preview" id="newMapCommand"># Command preview</div>
+
+            <div class="toolbar">
+              <button onclick="addMapToLibrary()">Add to map list</button>
+              <button class="secondary" onclick="updateNewMapPreview()">Preview command</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card available-panel">
+      <div class="card-header">
+        <div>
+          <h2>Available Maps</h2>
+          <span>Available maps on Farmor. Refresh or clear the list here.</span>
+        </div>
+        <div class="diagnostics-actions">
           <div class="button-group">
             <button id="refreshAvailableMapsBtn" class="secondary">Refresh Available Maps</button>
             <button id="clearAvailableMapsBtn" class="secondary">Clear Available Maps</button>
           </div>
+          <label class="compact-toggle">
+            <input type="checkbox" id="availableToggle" />
+            Collapse
+          </label>
         </div>
-        <div class="card-body">
-          <div id="importStatus" class="input-error" aria-live="polite"></div>
-          <div class="map-list" id="inventoryList"></div>
+      </div>
+      <div class="card-body available-content" id="availableContent">
+        <div id="importStatus" class="input-error" aria-live="polite"></div>
+        <div class="available-filter-buttons" id="availableFilterButtons" aria-label="Filter available maps by source"></div>
+        <div class="map-list" id="inventoryList"></div>
+      </div>
+    </section>
+
+    <section class="card diagnostics-panel">
+      <div class="card-header">
+        <div>
+          <h2>Diagnostics & Logs</h2>
+          <span>Advanced request/response and command history.</span>
         </div>
-      </section>
-    </div>
+        <div class="diagnostics-actions">
+          <label class="compact-toggle">
+            <input type="checkbox" id="diagnosticsToggle" />
+            Collapse
+          </label>
+        </div>
+      </div>
+      <div class="card-body diagnostics-content" id="diagnosticsContent">
+        <div class="diagnostics-section">
+          <div class="card-header diagnostics-subheader">
+            <div>
+              <h3>API Response</h3>
+              <span>Server request and response history.</span>
+            </div>
+          </div>
+          <div class="console" id="csApiResponseLog">API responses will appear here.</div>
+        </div>
+
+        <div class="diagnostics-section">
+          <div class="card-header diagnostics-subheader">
+            <div>
+              <h3>Command Log</h3>
+              <span>Generated RCON commands and preview output.</span>
+            </div>
+            <button class="danger" onclick="clearConsole()">Clear log</button>
+          </div>
+          <div class="console" id="console"># Commands will appear here...</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="app.js"></script>

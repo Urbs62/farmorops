@@ -67,6 +67,20 @@ main {
   gap: 24px;
 }
 
+@media (max-width: 1200px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .server-control-form .input-row {
+    flex-direction: column;
+  }
+}
+
 .card {
   background: rgba(23,29,35,.92);
   border: 1px solid var(--border);
@@ -131,6 +145,60 @@ main {
 
 .card-body { padding: 18px 20px 20px; }
 
+.diagnostics-panel {
+  grid-column: 1 / -1;
+}
+
+.available-panel {
+  grid-column: 1 / -1;
+}
+
+.diagnostics-actions,
+.available-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.diagnostics-content.collapsed,
+.available-content.collapsed,
+.select-content.collapsed,
+.library-content.collapsed {
+  display: none;
+}
+
+.diagnostics-section {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.diagnostics-section:last-child {
+  margin-bottom: 0;
+}
+
+.diagnostics-subheader {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.diagnostics-subheader h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.diagnostics-subheader span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.diagnostics-section .console {
+  min-height: 160px;
+  max-height: 260px;
+  overflow: auto;
+}
+
 .search {
   width: 100%;
   background: #0d1115;
@@ -140,6 +208,35 @@ main {
   padding: 12px 14px;
   margin-bottom: 14px;
   outline: none;
+}
+
+.available-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.filter-chip {
+  padding: 6px 10px;
+  min-height: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #10161c;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.filter-chip span {
+  color: inherit;
+}
+
+.filter-chip.active,
+.filter-chip[aria-pressed="true"] {
+  color: var(--text);
+  border-color: var(--accent-dark);
+  background: rgba(95, 211, 154, 0.14);
 }
 
 .map-list {
@@ -353,6 +450,127 @@ button:active { transform: translateY(1px); }
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.compact-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.compact-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+body.compact-mode header {
+  padding: 20px clamp(18px, 4vw, 36px) 12px;
+}
+
+body.compact-mode .server-pill {
+  padding: 8px 12px;
+}
+
+body.compact-mode main {
+  gap: 18px;
+}
+
+body.compact-mode .layout-left,
+body.compact-mode .layout-right {
+  gap: 18px;
+}
+
+body.compact-mode .card-header {
+  padding: 14px 16px;
+}
+
+body.compact-mode .card-body {
+  padding: 14px 16px 16px;
+}
+
+body.compact-mode .search,
+body.compact-mode input[type="number"],
+body.compact-mode .login-form input,
+body.compact-mode .input-row input {
+  padding: 10px 12px;
+}
+
+body.compact-mode .available-filter-buttons {
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+body.compact-mode .filter-chip {
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
+body.compact-mode .map-list,
+body.compact-mode .cycle-list,
+body.compact-mode .player-list,
+body.compact-mode .actions,
+body.compact-mode .button-group,
+body.compact-mode .server-control-form {
+  gap: 8px;
+}
+
+body.compact-mode .map-row {
+  padding: 10px 12px;
+}
+
+body.compact-mode .map-row-left {
+  gap: 4px;
+}
+
+body.compact-mode .map-title-row {
+  gap: 6px;
+}
+
+body.compact-mode .map-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+}
+
+body.compact-mode .map-note {
+  margin-top: 0;
+  white-space: nowrap;
+}
+
+body.compact-mode .map-actions button,
+body.compact-mode .button-group button,
+body.compact-mode .input-row button,
+body.compact-mode button {
+  padding: 8px 12px;
+}
+
+body.compact-mode .action-button {
+  min-height: 52px;
+  padding: 12px 14px;
+}
+
+body.compact-mode .metric {
+  padding: 10px;
+}
+
+body.compact-mode .card {
+  border-radius: 16px;
+}
+
+body.compact-mode .empty {
+  padding: 14px;
+}
+
+body.compact-mode .source-pill,
+body.compact-mode .mode-badge,
+body.compact-mode .map-badge {
+  font-size: 11px;
+  padding: 2px 8px;
 }
 
 .login-page {
