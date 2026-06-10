@@ -50,15 +50,24 @@ header {
 }
 
 .server-pill {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   background: var(--panel-soft);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 14px;
   padding: 10px 16px;
   color: var(--muted);
-  white-space: nowrap;
 }
 
 .server-pill strong { color: var(--ok); }
+
+.server-pill strong.offline { color: var(--danger); }
+
+.server-pill-extra {
+  color: var(--muted);
+}
 
 main {
   padding: 28px clamp(18px, 4vw, 48px) 48px;

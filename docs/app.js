@@ -1,7 +1,4 @@
 const STORAGE_KEYS = {
-  selectableMaps: 'farmorops_selectable_maps_v1',
-  inventory: 'farmorops_inventory_maps_v1',
-  cycle: 'farmorops.mapCycle',
   compactMode: 'farmorops.compactMode',
   diagnosticsCollapsed: 'farmorops.diagnosticsCollapsed',
   availableCollapsed: 'farmorops.availableCollapsed',
@@ -10,33 +7,16 @@ const STORAGE_KEYS = {
   availableFilter: 'farmorops.availableFilter'
 };
 
-const defaultMaps = [];
+const LEGACY_MAP_STORAGE_KEYS = {
+  selectableMaps: 'farmorops_selectable_maps_v1',
+  inventory: 'farmorops_inventory_maps_v1',
+  cycle: 'farmorops.mapCycle',
+  oldSelectableMaps: 'farmorops.mapLibrary'
+};
 
-const defaultInventory = [
-  { name: 'de_mirage', type: 'standard', value: 'de_mirage' },
-  { name: 'de_inferno', type: 'standard', value: 'de_inferno' },
-  { name: 'de_dust2', type: 'standard', value: 'de_dust2' },
-  { name: 'de_nuke', type: 'standard', value: 'de_nuke' },
-  { name: 'de_overpass', type: 'standard', value: 'de_overpass' },
-  { name: 'de_ancient', type: 'standard', value: 'de_ancient' },
-  { name: 'de_anubis', type: 'standard', value: 'de_anubis' },
-  { name: 'cs_office', type: 'standard', value: 'cs_office' },
-  { name: 'de_vertigo', type: 'standard', value: 'de_vertigo' },
-  { name: 'fy_pool_day', type: 'workshop', value: '3070286877' },
-  { name: 'awp_lego_2', type: 'workshop', value: '3070251264' }
-];
-
-function getMockFarmorInventory() {
-  return [...defaultInventory];
-}
-
-function fetchAvailableInventory() {
-  return Promise.resolve(getMockFarmorInventory());
-}
-
-let maps = loadStoredMaps();
-let inventoryMaps = loadStoredInventory();
-let cycle = loadStoredCycle();
+let maps = [];
+let inventoryMaps = [];
+let cycle = [];
 let availableFilter = readStorage(STORAGE_KEYS.availableFilter, 'all');
 if (!['all', 'standard', 'workshop'].includes(availableFilter)) {
   availableFilter = 'all';
@@ -53,6 +33,11 @@ const mapSearch = document.getElementById('mapSearch');
 const refreshAvailableMapsBtn = document.getElementById('refreshAvailableMapsBtn');
 const clearAvailableMapsBtn = document.getElementById('clearAvailableMapsBtn');
 const importStatusEl = document.getElementById('importStatus');
+const headerServerName = document.getElementById('headerServerName');
+const headerGameName = document.getElementById('headerGameName');
+const headerServerStatus = document.getElementById('headerServerStatus');
+const headerCurrentMap = document.getElementById('headerCurrentMap');
+const headerPlayerCount = document.getElementById('headerPlayerCount');
 const refreshServerStatusBtn = document.getElementById('refreshServerStatusBtn');
 const csApiCurrentMap = document.getElementById('csApiCurrentMap');
 const csApiOnlineStatus = document.getElementById('csApiOnlineStatus');
@@ -233,19 +218,111 @@ function isValidMap(map) {
     && typeof map.value === 'string';
 }
 
-function loadStoredCycle() {
-  const savedCycle = readStorage(STORAGE_KEYS.cycle, []);
-  return Array.isArray(savedCycle) && savedCycle.every(map => typeof map === 'string')
-    ? savedCycle
-    : [];
+function normalizeSharedMapState(state) {
+  const source = state && typeof state === 'object' && !Array.isArray(state)
+    ? state
+    : {};
+
+  return {
+    availableMaps: Array.isArray(source.availableMaps) && source.availableMaps.every(isValidMap)
+      ? source.availableMaps
+      : [],
+    selectableMaps: Array.isArray(source.selectableMaps) && source.selectableMaps.every(isValidMap)
+      ? source.selectableMaps
+      : [],
+    tonightMapCycle: Array.isArray(source.tonightMapCycle) && source.tonightMapCycle.every(map => typeof map === 'string')
+      ? source.tonightMapCycle
+      : []
+  };
 }
 
-function saveMaps() {
-  writeStorage(STORAGE_KEYS.selectableMaps, maps);
+function getCurrentSharedMapState() {
+  return {
+    availableMaps: inventoryMaps,
+    selectableMaps: maps,
+    tonightMapCycle: cycle
+  };
 }
 
-function saveInventory() {
-  writeStorage(STORAGE_KEYS.inventory, inventoryMaps);
+function applySharedMapState(state) {
+  const nextState = normalizeSharedMapState(state);
+  inventoryMaps = nextState.availableMaps;
+  maps = nextState.selectableMaps;
+  cycle = nextState.tonightMapCycle;
+}
+
+function hasSharedMapState(state) {
+  return Boolean(
+    state.availableMaps.length
+    || state.selectableMaps.length
+    || state.tonightMapCycle.length
+  );
+}
+
+function getLegacySharedMapState() {
+  let legacySelectableMaps = readStorage(LEGACY_MAP_STORAGE_KEYS.selectableMaps, null);
+  if (legacySelectableMaps === null) {
+    legacySelectableMaps = readStorage(LEGACY_MAP_STORAGE_KEYS.oldSelectableMaps, null);
+  }
+
+  return normalizeSharedMapState({
+    availableMaps: readStorage(LEGACY_MAP_STORAGE_KEYS.inventory, []),
+    selectableMaps: legacySelectableMaps || [],
+    tonightMapCycle: readStorage(LEGACY_MAP_STORAGE_KEYS.cycle, [])
+  });
+}
+
+function clearLegacySharedMapState() {
+  try {
+    Object.values(LEGACY_MAP_STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+  } catch (error) {
+    addCommand('# Could not clear legacy local map state');
+  }
+}
+
+async function loadSharedMapState() {
+  const response = await fetch('/api/state/maps', { credentials: 'include' });
+  const body = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const errorMessage = body?.message || body?.error || response.statusText;
+    throw new Error(`Failed to load shared map state: ${response.status} ${errorMessage}`);
+  }
+
+  let state = normalizeSharedMapState(body);
+  const legacyState = getLegacySharedMapState();
+
+  if (!hasSharedMapState(state) && hasSharedMapState(legacyState)) {
+    await saveSharedMapState(legacyState);
+    clearLegacySharedMapState();
+    state = legacyState;
+    setImportStatus('Migrated local map state to shared backend storage.', 'success');
+  }
+
+  applySharedMapState(state);
+}
+
+async function saveSharedMapState(state = getCurrentSharedMapState()) {
+  const response = await fetch('/api/state/maps', {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(normalizeSharedMapState(state))
+  });
+  const body = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const errorMessage = body?.message || body?.error || response.statusText;
+    throw new Error(`Failed to save shared map state: ${response.status} ${errorMessage}`);
+  }
+
+  applySharedMapState(body);
+}
+
+function showSharedMapStateError(error, action = 'save') {
+  const message = error && error.message ? error.message : 'Unknown error';
+  setImportStatus(`Shared map state ${action} failed: ${message}`, 'error');
+  addCommand(`# Shared map state ${action} failed: ${message}`);
 }
 
 function setImportStatus(message, type = 'info') {
@@ -311,7 +388,25 @@ function syncSelectedMapToInput() {
   }
 }
 
+function renderHeaderServerStatus(status) {
+  const serverName = status?.serverName || status?.name || 'Farmor';
+  const gameName = status?.game || status?.gameName || 'CS2';
+  const isOnline = Boolean(status?.online);
+  const playerCount = typeof status?.playerCount === 'number' ? status.playerCount : 0;
+  const maxPlayers = typeof status?.maxPlayers === 'number' ? status.maxPlayers : 0;
+
+  if (headerServerName) headerServerName.textContent = serverName;
+  if (headerGameName) headerGameName.textContent = gameName;
+  if (headerServerStatus) {
+    headerServerStatus.textContent = isOnline ? 'Online' : 'Offline';
+    headerServerStatus.classList.toggle('offline', !isOnline);
+  }
+  if (headerCurrentMap) headerCurrentMap.textContent = status?.currentMap ? `Map: ${status.currentMap}` : '';
+  if (headerPlayerCount) headerPlayerCount.textContent = maxPlayers ? `Players: ${playerCount} / ${maxPlayers}` : '';
+}
+
 function renderServerStatus(status) {
+  renderHeaderServerStatus(status);
   if (csApiCurrentMap) {
     csApiCurrentMap.textContent = status?.currentMap || '—';
   }
@@ -408,7 +503,6 @@ function updateAvailableMapsFromServer(items) {
   });
 
   inventoryMaps = refreshed;
-  saveInventory();
 
   maps = maps.map((map) => {
     if (map.origin && !serverKeys.has(getMapKey(map))) {
@@ -416,7 +510,6 @@ function updateAvailableMapsFromServer(items) {
     }
     return { ...map, unavailable: false };
   });
-  saveMaps();
 }
 
 async function refreshServerStatus() {
@@ -438,7 +531,7 @@ async function refreshServerStatus() {
     if (body?.commandMode) {
       if (body.commandMode === 'local-preview') {
         setCsApiModeBadge('Preview mode', 'preview');
-        setCsApiModeWarning('WARNING: Commands are in local preview mode and are not executed. Set CS_SERVER_API_BASE_URL and/or DRY_RUN=false to use real server commands.');
+        setCsApiModeWarning('Preview mode is active. Server actions are not being sent to the live server.');
       } else {
         setCsApiModeBadge('Live mode', 'live');
         setCsApiModeWarning('');
@@ -728,85 +821,87 @@ async function refreshAvailableMaps() {
     }
 
     updateAvailableMapsFromServer(body);
+    await saveSharedMapState();
     renderInventory();
     renderMaps();
     setImportStatus(`Refreshed ${body.length} map(s) from server.`, 'success');
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
     setImportStatus(`Refresh error: ${message}`, 'error');
+    if (message.includes('shared map state')) {
+      addCommand(`# Shared map state save failed: ${message}`);
+    }
   } finally {
     refreshAvailableMapsBtn.disabled = false;
   }
 }
 
-function clearAvailableMaps() {
+async function clearAvailableMaps() {
   if (!clearAvailableMapsBtn) return;
   if (!confirm('Remove all maps from Available Maps?')) {
     return;
   }
 
   inventoryMaps = [];
-  saveInventory();
-  renderInventory();
-  setImportStatus('Cleared all Available Maps.', 'success');
-}
-
-function saveCycle() {
-  writeStorage(STORAGE_KEYS.cycle, cycle);
+  try {
+    await saveSharedMapState();
+    renderInventory();
+    setImportStatus('Cleared all Available Maps.', 'success');
+  } catch (err) {
+    showSharedMapStateError(err);
+  }
 }
 
 function isSelectableMap(map) {
   return maps.some(item => item.name === map.name);
 }
 
-function loadStoredInventory() {
-  const savedInventory = readStorage(STORAGE_KEYS.inventory, null);
-  return Array.isArray(savedInventory) && savedInventory.every(isValidMap)
-    ? savedInventory
-    : getMockFarmorInventory();
-}
-
-function loadStoredMaps() {
-  let savedMaps = readStorage(STORAGE_KEYS.selectableMaps, null);
-  if (savedMaps === null) {
-    savedMaps = readStorage('farmorops.mapLibrary', null);
-  }
-
-  return Array.isArray(savedMaps) && savedMaps.every(isValidMap)
-    ? savedMaps
-    : [...defaultMaps];
-}
-
-function addInventoryMap(mapName) {
+async function addInventoryMap(mapName) {
   const map = inventoryMaps.find(item => item.name === mapName);
   if (!map || isSelectableMap(map)) return;
 
   maps.push({ ...map, source: 'inventory' });
-  saveMaps();
-  renderMaps();
-  renderInventory();
-  addCommand(`# Added to selectable maps: ${map.name}`);
+  try {
+    await saveSharedMapState();
+    renderMaps();
+    renderInventory();
+    addCommand(`# Added to selectable maps: ${map.name}`);
+  } catch (err) {
+    maps = maps.filter(item => item.name !== map.name);
+    renderMaps();
+    renderInventory();
+    showSharedMapStateError(err);
+  }
 }
 
-function removeSelectableMap(mapName) {
+async function removeSelectableMap(mapName) {
   const index = maps.findIndex(item => item.name === mapName);
   if (index === -1) return;
 
-  maps.splice(index, 1);
-  saveMaps();
+  const removedMap = maps.splice(index, 1)[0];
 
   const removedFromCycle = cycle.includes(mapName);
+  const previousCycle = [...cycle];
   if (removedFromCycle) {
     cycle = cycle.filter(item => item !== mapName);
-    saveCycle();
   }
 
-  renderMaps();
-  renderInventory();
-  renderCycle();
-  addCommand(`# Removed from selectable maps: ${mapName}`);
-  if (removedFromCycle) {
-    addCommand(`# Removed from tonight cycle: ${mapName}`);
+  try {
+    await saveSharedMapState();
+    renderMaps();
+    renderInventory();
+    renderCycle();
+    addCommand(`# Removed from selectable maps: ${mapName}`);
+    if (removedFromCycle) {
+      addCommand(`# Removed from tonight cycle: ${mapName}`);
+    }
+  } catch (err) {
+    maps.splice(index, 0, removedMap);
+    cycle = previousCycle;
+    renderMaps();
+    renderInventory();
+    renderCycle();
+    showSharedMapStateError(err);
   }
 }
 
@@ -968,39 +1063,69 @@ function renderCycle() {
   `).join('');
 }
 
-function addMapToCycle(map) {
-  if (!cycle.includes(map)) cycle.push(map);
-  saveCycle();
-  renderCycle();
-  addCommand(`# Added to tonight cycle: ${map}`);
+async function addMapToCycle(map) {
+  if (cycle.includes(map)) return;
+
+  cycle.push(map);
+  try {
+    await saveSharedMapState();
+    renderCycle();
+    addCommand(`# Added to tonight cycle: ${map}`);
+  } catch (err) {
+    cycle = cycle.filter(item => item !== map);
+    renderCycle();
+    showSharedMapStateError(err);
+  }
 }
 
-function removeMap(index) {
+async function removeMap(index) {
   const removed = cycle.splice(index, 1)[0];
-  saveCycle();
-  renderCycle();
-  addCommand(`# Removed from tonight cycle: ${removed}`);
+  try {
+    await saveSharedMapState();
+    renderCycle();
+    addCommand(`# Removed from tonight cycle: ${removed}`);
+  } catch (err) {
+    cycle.splice(index, 0, removed);
+    renderCycle();
+    showSharedMapStateError(err);
+  }
 }
 
-function clearMaps() {
+async function clearMaps() {
   if (!confirm('Remove all maps from the active list and clear the mapcycle?')) {
     return;
   }
 
+  const previousMaps = [...maps];
+  const previousCycle = [...cycle];
   maps = [];
   cycle = [];
-  saveMaps();
-  saveCycle();
-  renderMaps();
-  renderCycle();
-  addCommand('# Cleared all selectable maps and mapcycle');
+  try {
+    await saveSharedMapState();
+    renderMaps();
+    renderCycle();
+    addCommand('# Cleared all selectable maps and mapcycle');
+  } catch (err) {
+    maps = previousMaps;
+    cycle = previousCycle;
+    renderMaps();
+    renderCycle();
+    showSharedMapStateError(err);
+  }
 }
 
-function clearCycle() {
+async function clearCycle() {
+  const previousCycle = [...cycle];
   cycle = [];
-  saveCycle();
-  renderCycle();
-  addCommand('# Cleared tonight map cycle');
+  try {
+    await saveSharedMapState();
+    renderCycle();
+    addCommand('# Cleared tonight map cycle');
+  } catch (err) {
+    cycle = previousCycle;
+    renderCycle();
+    showSharedMapStateError(err);
+  }
 }
 
 function getMapCommand(mapName) {
@@ -1052,7 +1177,7 @@ function generateCycleCommands() {
   }
 
   addCommand('# Tonight map cycle');
-  cycle.forEach((map, index) => addCommand(`# ${index + 1}. ${getMapCommand(map)}`));
+  cycle.forEach((map, index) => addCommand(`# ${index + 1}. ${map}`));
 }
 
 async function announceCycle() {
@@ -1091,10 +1216,13 @@ function buildMapCommand(type, value) {
 function updateNewMapPreview() {
   const type = document.getElementById('mapType').value;
   const value = document.getElementById('newMapValue').value;
-  document.getElementById('newMapCommand').textContent = buildMapCommand(type, value);
+  const preview = document.getElementById('newMapCommand');
+  if (preview) {
+    preview.textContent = buildMapCommand(type, value);
+  }
 }
 
-function addMapToLibrary() {
+async function addMapToLibrary() {
   const type = document.getElementById('mapType').value;
   const nameInput = document.getElementById('newMapName');
   const valueInput = document.getElementById('newMapValue');
@@ -1113,12 +1241,20 @@ function addMapToLibrary() {
   }
 
   maps.push({ name, type, value });
-  saveMaps();
-  nameInput.value = '';
-  valueInput.value = '';
-  updateNewMapPreview();
-  renderMaps();
-  addCommand(`# Added map to library: ${name}`);
+  try {
+    await saveSharedMapState();
+    nameInput.value = '';
+    valueInput.value = '';
+    updateNewMapPreview();
+    renderMaps();
+    renderInventory();
+    addCommand(`# Added map to library: ${name}`);
+  } catch (err) {
+    maps = maps.filter(map => map.name !== name);
+    renderMaps();
+    renderInventory();
+    showSharedMapStateError(err);
+  }
 }
 
 function toggleBalanceUI() {
@@ -1210,10 +1346,9 @@ function updatePauseButton() {
   if (!button) return;
 
   const label = matchPaused ? 'Resume Match' : 'Pause Match';
-  const commandHint = matchPaused ? 'mp_unpause_match' : 'mp_pause_match';
 
   button.classList.toggle('paused', matchPaused);
-  button.innerHTML = `${label}<small>${commandHint}</small>`;
+  button.textContent = label;
 }
 
 function togglePauseMatch() {
@@ -1241,36 +1376,75 @@ async function requestCommandPreview(command) {
   return data.preview || command;
 }
 
+function getActivityLabel(command) {
+  const trimmed = command.trim();
+
+  if (trimmed.startsWith('#')) {
+    return trimmed.replace(/^#\s*/, '');
+  }
+
+  const labels = {
+    'bot_kick': 'Kick bots',
+    'bot_add_ct': 'Add CT bot',
+    'bot_add_t': 'Add T bot',
+    'mp_pause_match': 'Pause match',
+    'mp_unpause_match': 'Resume match',
+    'mp_restartgame 1': 'Restart match',
+    'mp_free_armor 2': 'Enable sudden death armor',
+    'mp_maxrounds 1': 'Set sudden death round limit',
+    'mp_freezetime 1': 'Set sudden death freeze time'
+  };
+
+  if (labels[trimmed]) {
+    return labels[trimmed];
+  }
+
+  if (trimmed.startsWith('say ')) {
+    return 'Send announcement';
+  }
+
+  if (trimmed.startsWith('mp_startmoney ')) {
+    return 'Set sudden death start money';
+  }
+
+  if (trimmed.startsWith('changelevel ') || trimmed.startsWith('host_workshop_map ')) {
+    return 'Change map';
+  }
+
+  return 'Server action';
+}
+
 function addCommand(command) {
   const timestamp = new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const lineIndex = consoleLines.push(`[${timestamp}] ${command}`) - 1;
+  const activityLabel = getActivityLabel(command);
+  const lineIndex = consoleLines.push(`[${timestamp}] ${activityLabel}`) - 1;
   consoleBox.textContent = consoleLines.join('\n');
   consoleBox.scrollTop = consoleBox.scrollHeight;
 
   if (command.trim().startsWith('#')) return;
 
   requestCommandPreview(command)
-    .then(preview => {
-      consoleLines[lineIndex] = `[${timestamp}] ${preview}`;
+    .then(() => {
+      consoleLines[lineIndex] = `[${timestamp}] ${activityLabel}`;
       consoleBox.textContent = consoleLines.join('\n');
       consoleBox.scrollTop = consoleBox.scrollHeight;
     })
     .catch(() => {
-      consoleLines[lineIndex] = `[${timestamp}] ${command}`;
+      consoleLines[lineIndex] = `[${timestamp}] ${activityLabel}`;
       consoleBox.textContent = consoleLines.join('\n');
     });
 }
 
 function clearConsole() {
   consoleLines = [];
-  consoleBox.textContent = '# Commands will appear here...';
+  consoleBox.textContent = 'Activity will appear here.';
 }
 
 async function copyConsole() {
   const text = consoleLines.join('\n');
   if (!text) return;
   await navigator.clipboard.writeText(text);
-  addCommand('# Copied commands to clipboard');
+  addCommand('# Copied activity log to clipboard');
 }
 
 mapSearch.addEventListener('input', renderMaps);
@@ -1493,6 +1667,21 @@ function executeSuddenDeathSequence(startMoney) {
   commands.forEach(command => addCommand(command));
 }
 
-renderMaps();
-renderInventory();
-renderCycle();
+async function initializeApp() {
+  renderMaps();
+  renderInventory();
+  renderCycle();
+
+  try {
+    await loadSharedMapState();
+    renderMaps();
+    renderInventory();
+    renderCycle();
+  } catch (err) {
+    showSharedMapStateError(err, 'load');
+  }
+
+  refreshServerStatus();
+}
+
+initializeApp();

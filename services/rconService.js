@@ -10,25 +10,28 @@ async function executeCommand(command) {
     throw new Error('RCON password not configured');
   }
 
-  const conn = await Rcon.connect({ host: RCON_HOST, port: RCON_PORT, password: RCON_PASSWORD });
+  const conn = new Rcon({ host: RCON_HOST, port: RCON_PORT, password: RCON_PASSWORD });
+  let rejectSocketError;
+  const socketError = new Promise((_, reject) => {
+    rejectSocketError = reject;
+  });
+  socketError.catch(() => {});
   const onError = (err) => {
-    console.error('[RCON] socket error:', err && err.message ? err.message : err);
-  };
-  const cleanup = () => {
-    try {
-      conn.off('error', onError);
-    } catch (_) {
-      // ignore cleanup failures
-    }
+    const error = err instanceof Error ? err : new Error(String(err || 'RCON socket error'));
+    console.error('[RCON] socket error:', error.message);
+    rejectSocketError(error);
   };
 
   conn.on('error', onError);
-  conn.once('end', cleanup);
-  conn.once('error', cleanup);
 
   try {
+    await Promise.race([
+      conn.connect(),
+      socketError
+    ]);
     const result = await Promise.race([
       conn.send(command),
+      socketError,
       new Promise((_, reject) => setTimeout(() => reject(new Error('RCON timeout')), DEFAULT_TIMEOUT))
     ]);
     await conn.end();

@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs/promises');
 const rconService = require('./services/rconService');
 const csServerService = require('./services/csServerService');
 
@@ -11,6 +12,13 @@ const isProduction = process.env.NODE_ENV === 'production';
 const ENABLE_LEGACY_COMMANDS = process.env.ENABLE_LEGACY_COMMANDS === 'true';
 const CS_SERVER_API_BASE_URL = process.env.CS_SERVER_API_BASE_URL || process.env.CS_SERVER_BASE_URL || '';
 const CS_SERVER_API_KEY = process.env.CS_SERVER_API_KEY || '';
+const DATA_DIR = path.join(__dirname, 'data');
+const FARMOROPS_STATE_FILE = path.join(DATA_DIR, 'farmorops-state.json');
+const EMPTY_MAP_STATE = {
+  availableMaps: [],
+  selectableMaps: [],
+  tonightMapCycle: []
+};
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
@@ -52,6 +60,57 @@ async function executeLocalCommand(command) {
 
   const result = await rconService.executeCommand(command);
   return { execute: true, command, result: result || 'OK' };
+}
+
+function normalizeMapStatePayload(payload) {
+  const state = payload && typeof payload === 'object' && !Array.isArray(payload)
+    ? payload
+    : {};
+
+  return {
+    availableMaps: Array.isArray(state.availableMaps) ? state.availableMaps : [],
+    selectableMaps: Array.isArray(state.selectableMaps) ? state.selectableMaps : [],
+    tonightMapCycle: Array.isArray(state.tonightMapCycle) ? state.tonightMapCycle : []
+  };
+}
+
+function isValidStoredMap(map) {
+  return map
+    && typeof map === 'object'
+    && !Array.isArray(map)
+    && typeof map.name === 'string'
+    && typeof map.type === 'string'
+    && typeof map.value === 'string';
+}
+
+function isValidMapState(state) {
+  return Array.isArray(state.availableMaps)
+    && state.availableMaps.every(isValidStoredMap)
+    && Array.isArray(state.selectableMaps)
+    && state.selectableMaps.every(isValidStoredMap)
+    && Array.isArray(state.tonightMapCycle)
+    && state.tonightMapCycle.every(map => typeof map === 'string');
+}
+
+async function readFarmorOpsMapState() {
+  try {
+    const content = await fs.readFile(FARMOROPS_STATE_FILE, 'utf8');
+    const parsed = JSON.parse(content);
+    const state = normalizeMapStatePayload(parsed);
+    return isValidMapState(state) ? state : { ...EMPTY_MAP_STATE };
+  } catch (err) {
+    if (err && err.code === 'ENOENT') {
+      return { ...EMPTY_MAP_STATE };
+    }
+    throw err;
+  }
+}
+
+async function writeFarmorOpsMapState(state) {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  const tmpFile = `${FARMOROPS_STATE_FILE}.tmp`;
+  await fs.writeFile(tmpFile, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+  await fs.rename(tmpFile, FARMOROPS_STATE_FILE);
 }
 
 app.use(express.urlencoded({ extended: false }));
@@ -127,20 +186,37 @@ app.get('/CLIENT_API.md', (req, res) => {
   res.sendFile(path.join(__dirname, 'docs', 'CLIENT_API.md'));
 });
 
-app.get('/cs-api-test.html', (req, res) => {
-  if (isProduction) {
-    return res.status(404).end();
-  }
-
-  if (!isAuthenticated(req)) {
-    return res.redirect('/login');
-  }
-  res.sendFile(path.join(__dirname, 'docs', 'cs-api-test.html'));
-});
-
 app.use(express.static(path.join(__dirname, 'docs')));
 
 app.use('/api', requireAuth);
+
+app.get('/api/state/maps', async (req, res) => {
+  try {
+    const state = await readFarmorOpsMapState();
+    return res.json(state);
+  } catch (err) {
+    console.error('Failed to read FarmorOps map state:', err);
+    return res.status(500).json({ error: 'Failed to read FarmorOps map state.' });
+  }
+});
+
+app.put('/api/state/maps', async (req, res) => {
+  const state = normalizeMapStatePayload(req.body);
+
+  if (!isValidMapState(state)) {
+    return res.status(400).json({
+      error: 'State must contain availableMaps, selectableMaps, and tonightMapCycle arrays.'
+    });
+  }
+
+  try {
+    await writeFarmorOpsMapState(state);
+    return res.json(state);
+  } catch (err) {
+    console.error('Failed to save FarmorOps map state:', err);
+    return res.status(500).json({ error: 'Failed to save FarmorOps map state.' });
+  }
+});
 
 app.get('/api/cs/maps', async (req, res) => {
   try {

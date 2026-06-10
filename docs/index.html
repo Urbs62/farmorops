@@ -13,12 +13,17 @@
       <p>Community Server Control Panel</p>
     </div>
     <div class="header-actions">
-      <div class="server-pill">Server: <strong>Farmor</strong> · CS2 · Online</div>
+      <div class="server-pill" aria-label="Server status">
+        <span>Server: <strong id="headerServerName">Farmor</strong></span>
+        <span>Game: <strong id="headerGameName">CS2</strong></span>
+        <span>Status: <strong id="headerServerStatus">Checking...</strong></span>
+        <span class="server-pill-extra" id="headerCurrentMap"></span>
+        <span class="server-pill-extra" id="headerPlayerCount"></span>
+      </div>
       <label class="compact-toggle">
         <input type="checkbox" id="compactModeToggle" />
         Compact mode
       </label>
-      <a href="/cs-api-test.html" class="secondary">CS API Test</a>
       <form method="POST" action="/logout">
         <button type="submit" class="secondary">Logout</button>
       </form>
@@ -54,20 +59,12 @@
             </div>
           </div>
 
-          <div class="status-note">Bots are not listed by the API. steamId is currently null.</div>
+          <div class="status-note">Bot details may be limited by the server.</div>
           <div class="status-note warning" id="csApiModeWarning"></div>
 
           <div class="player-section">
             <label>Connected players</label>
             <div class="player-list" id="csApiPlayerList">No players connected.</div>
-          </div>
-
-          <div class="server-control-form">
-            <div class="button-group">
-              <button class="secondary" id="csApiGetMapcycleBtn">Get current mapcycle</button>
-              <button class="secondary" id="csApiUpdateMapcycleBtn">Update mapcycle</button>
-            </div>
-            <div id="csApiMapcycleWarning" class="map-note"></div>
           </div>
 
           <div id="csApiStatusMessage" class="input-error" aria-live="polite"></div>
@@ -86,23 +83,19 @@
         <div class="card-body">
           <div class="actions">
             <button class="action-button danger" onclick="restartMatchApi()" id="restartMatchBtn">
-              Restart match
-              <small>mp_restartgame 1</small>
+              Restart Match
             </button>
             <button id="pauseToggleBtn" class="action-button secondary" onclick="togglePauseMatch()">
               Pause Match
-              <small>mp_pause_match</small>
             </button>
             <button class="action-button secondary" onclick="addCommand('bot_kick')">
-              Kick bots
-              <small>bot_kick</small>
+              Kick Bots
             </button>
           </div>
 
           <div class="toolbar bot-toolbar">
             <button class="action-button" id="balanceToggleBtn" onclick="toggleBalanceUI()">
               Balance Bots
-              <small>balance teams</small>
             </button>
             <button class="secondary" onclick="addCTBot()">Add CT Bot</button>
             <button class="secondary" onclick="addTBot()">Add T Bot</button>
@@ -125,10 +118,10 @@
           </div>
 
           <div class="server-control-form">
-            <label>Exec config</label>
+            <label>Match mode</label>
             <div class="button-group">
-              <button class="secondary" id="csApiWarmupBtn">Warmup forever (wu.cfg)</button>
-              <button class="secondary" id="csApiOrdinaryBtn">Start ordinary match (owu.cfg)</button>
+              <button class="secondary" id="csApiWarmupBtn">Warmup Mode</button>
+              <button class="secondary" id="csApiOrdinaryBtn">Start Match</button>
             </div>
           </div>
 
@@ -176,7 +169,6 @@
           <div class="actions">
             <button class="action-button sudden-death" onclick="initiateSuddenDeath()">
               Sudden Death
-              <small>mp_maxrounds 1</small>
             </button>
           </div>
         </div>
@@ -194,9 +186,9 @@
           <div class="cycle-list" id="cycleList"></div>
           <div class="toolbar">
             <button onclick="loadNextMap()">Load next map</button>
-            <button class="secondary" onclick="generateCycleCommands()">Generate cycle commands</button>
+            <button class="secondary" onclick="generateCycleCommands()">Show Cycle</button>
             <button class="secondary" onclick="announceCycle()">Announce cycle</button>
-            <button class="secondary" onclick="copyConsole()">Copy commands</button>
+            <button class="secondary" onclick="copyConsole()">Copy Log</button>
           </div>
         </div>
       </section>
@@ -244,15 +236,8 @@
 
             <input type="text" id="newMapValue" placeholder="Map name eller Steam Workshop-länk/ID" oninput="updateNewMapPreview()" />
 
-            <div class="hint">
-              Standardbanor använder <strong>changelevel mapname</strong>. Workshop-banor använder normalt <strong>host_workshop_map workshopId</strong>. I MVP sparas detta bara i webbsidan/mockupen.
-            </div>
-
-            <div class="command-preview" id="newMapCommand"># Command preview</div>
-
             <div class="toolbar">
               <button onclick="addMapToLibrary()">Add to map list</button>
-              <button class="secondary" onclick="updateNewMapPreview()">Preview command</button>
             </div>
           </div>
         </div>
@@ -287,7 +272,7 @@
       <div class="card-header">
         <div>
           <h2>Diagnostics & Logs</h2>
-          <span>Advanced request/response and command history.</span>
+          <span>Advanced request, response, and activity history.</span>
         </div>
         <div class="diagnostics-actions">
           <label class="compact-toggle">
@@ -310,12 +295,12 @@
         <div class="diagnostics-section">
           <div class="card-header diagnostics-subheader">
             <div>
-              <h3>Command Log</h3>
-              <span>Generated RCON commands and preview output.</span>
+              <h3>Activity Log</h3>
+              <span>Operational activity history.</span>
             </div>
-            <button class="danger" onclick="clearConsole()">Clear log</button>
+            <button class="danger" onclick="clearConsole()">Clear Log</button>
           </div>
-          <div class="console" id="console"># Commands will appear here...</div>
+          <div class="console" id="console">Activity will appear here.</div>
         </div>
       </div>
     </section>
