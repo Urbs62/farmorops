@@ -17,7 +17,11 @@ const FARMOROPS_STATE_FILE = path.join(DATA_DIR, 'farmorops-state.json');
 const EMPTY_MAP_STATE = {
   availableMaps: [],
   selectableMaps: [],
-  tonightMapCycle: []
+  tonightMapCycle: [],
+  tonightMapProgress: {
+    playedMaps: [],
+    currentMap: ''
+  }
 };
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || '';
@@ -47,9 +51,15 @@ if (USE_LOCAL_RCON) {
 const DRY_RUN = (process.env.DRY_RUN || 'true').toLowerCase() === 'true';
 
 function getLocalMapCommand(mapId) {
+  const workshopMatch = String(mapId).match(/^workshop:(\d+)$/);
+  if (workshopMatch) {
+    return `host_workshop_map ${workshopMatch[1]}`;
+  }
+
   if (/^\d+$/.test(mapId)) {
     return `host_workshop_map ${mapId}`;
   }
+
   return `changelevel ${mapId}`;
 }
 
@@ -66,11 +76,25 @@ function normalizeMapStatePayload(payload) {
   const state = payload && typeof payload === 'object' && !Array.isArray(payload)
     ? payload
     : {};
+  const tonightMapCycle = Array.isArray(state.tonightMapCycle) ? state.tonightMapCycle : [];
+  const progress = state.tonightMapProgress && typeof state.tonightMapProgress === 'object' && !Array.isArray(state.tonightMapProgress)
+    ? state.tonightMapProgress
+    : {};
+  const playedMaps = Array.isArray(progress.playedMaps)
+    ? progress.playedMaps.filter(map => typeof map === 'string' && tonightMapCycle.includes(map))
+    : [];
+  const currentMap = typeof progress.currentMap === 'string' && tonightMapCycle.includes(progress.currentMap)
+    ? progress.currentMap
+    : '';
 
   return {
     availableMaps: Array.isArray(state.availableMaps) ? state.availableMaps : [],
     selectableMaps: Array.isArray(state.selectableMaps) ? state.selectableMaps : [],
-    tonightMapCycle: Array.isArray(state.tonightMapCycle) ? state.tonightMapCycle : []
+    tonightMapCycle,
+    tonightMapProgress: {
+      playedMaps: [...new Set(playedMaps)],
+      currentMap
+    }
   };
 }
 
@@ -89,7 +113,13 @@ function isValidMapState(state) {
     && Array.isArray(state.selectableMaps)
     && state.selectableMaps.every(isValidStoredMap)
     && Array.isArray(state.tonightMapCycle)
-    && state.tonightMapCycle.every(map => typeof map === 'string');
+    && state.tonightMapCycle.every(map => typeof map === 'string')
+    && state.tonightMapProgress
+    && typeof state.tonightMapProgress === 'object'
+    && !Array.isArray(state.tonightMapProgress)
+    && Array.isArray(state.tonightMapProgress.playedMaps)
+    && state.tonightMapProgress.playedMaps.every(map => typeof map === 'string')
+    && typeof state.tonightMapProgress.currentMap === 'string';
 }
 
 async function readFarmorOpsMapState() {

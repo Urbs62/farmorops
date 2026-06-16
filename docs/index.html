@@ -40,7 +40,7 @@
           </div>
           <div class="header-actions-right">
             <span id="csApiModeBadge" class="mode-badge">Mode unknown</span>
-            <button class="secondary" id="refreshServerStatusBtn">Get Server Status</button>
+            <button class="secondary readiness-verified-api" id="refreshServerStatusBtn" title="Verified CS API action">Get Server Status</button>
           </div>
         </div>
         <div class="card-body">
@@ -82,13 +82,13 @@
         </div>
         <div class="card-body">
           <div class="actions">
-            <button class="action-button danger" onclick="restartMatchApi()" id="restartMatchBtn">
+            <button class="action-button danger readiness-verified-api" onclick="restartMatchApi()" id="restartMatchBtn" title="Verified CS API action">
               Restart Match
             </button>
-            <button id="pauseToggleBtn" class="action-button secondary" onclick="togglePauseMatch()">
+            <button id="pauseToggleBtn" class="action-button secondary readiness-legacy-rcon" onclick="togglePauseMatch()" title="Legacy/RCON path">
               Pause Match
             </button>
-            <button class="action-button secondary" onclick="addCommand('bot_kick')">
+            <button class="action-button secondary readiness-legacy-rcon" onclick="addCommand('bot_kick')" title="Legacy/RCON path">
               Kick Bots
             </button>
           </div>
@@ -97,9 +97,9 @@
             <button class="action-button" id="balanceToggleBtn" onclick="toggleBalanceUI()">
               Balance Bots
             </button>
-            <button class="secondary" onclick="addCTBot()">Add CT Bot</button>
-            <button class="secondary" onclick="addTBot()">Add T Bot</button>
-            <button class="secondary" onclick="kickBots()">Kick Bots</button>
+            <button class="secondary readiness-legacy-rcon" onclick="addCTBot()" title="Legacy/RCON path">Add CT Bot</button>
+            <button class="secondary readiness-legacy-rcon" onclick="addTBot()" title="Legacy/RCON path">Add T Bot</button>
+            <button class="secondary readiness-legacy-rcon" onclick="kickBots()" title="Legacy/RCON path">Kick Bots</button>
           </div>
 
           <div class="balance-wrapper" id="balanceWrapper">
@@ -112,7 +112,7 @@
               <input type="number" id="tPlayers" min="0" max="10" value="5" />
             </div>
             <div class="control-row">
-              <button onclick="balanceBots()">Balance</button>
+              <button class="readiness-legacy-rcon" onclick="balanceBots()" title="Legacy/RCON path">Balance</button>
             </div>
             <div class="input-error" id="balanceMessage" aria-live="polite"></div>
           </div>
@@ -120,8 +120,8 @@
           <div class="server-control-form">
             <label>Match mode</label>
             <div class="button-group">
-              <button class="secondary" id="csApiWarmupBtn">Warmup Mode</button>
-              <button class="secondary" id="csApiOrdinaryBtn">Start Match</button>
+              <button class="secondary readiness-verified-api" id="csApiWarmupBtn" title="Verified CS API action">Warmup Mode</button>
+              <button class="secondary readiness-verified-api" id="csApiOrdinaryBtn" title="Verified CS API action">Start Match</button>
             </div>
           </div>
 
@@ -131,7 +131,7 @@
               <select id="csApiMapSelect">
                 <option value="">Choose an available map</option>
               </select>
-              <button id="csApiChangeMapBtn">Change Map</button>
+              <button id="csApiChangeMapBtn" class="readiness-verified-api" title="Verified CS API action">Change Map</button>
             </div>
           </div>
 
@@ -139,7 +139,7 @@
             <label for="csApiMessageInput">Send server message</label>
             <div class="input-row">
               <input id="csApiMessageInput" type="text" placeholder="Enter announcement text" />
-              <button id="csApiSendMessageBtn">Send</button>
+              <button id="csApiSendMessageBtn" class="readiness-verified-api" title="Verified CS API action">Send</button>
             </div>
           </div>
 
@@ -163,11 +163,11 @@
               maxlength="25"
               autocomplete="off"
             />
-            <button onclick="sendAnnouncement()">Send</button>
+            <button class="readiness-verified-api" onclick="sendAnnouncement()" title="Verified CS API action">Send</button>
           </div>
 
           <div class="actions">
-            <button class="action-button sudden-death" onclick="initiateSuddenDeath()">
+            <button class="action-button sudden-death readiness-legacy-rcon" onclick="initiateSuddenDeath()" title="Legacy/RCON path">
               Sudden Death
             </button>
           </div>
@@ -180,14 +180,17 @@
             <h2>Tonight's Map Cycle</h2>
             <span>Currently selected maps for tonight.</span>
           </div>
-          <button class="secondary" onclick="clearCycle()">Clear Cycle</button>
+          <div class="button-group">
+            <button class="secondary" onclick="resetCycleProgress()">Reset Progress</button>
+            <button class="secondary" onclick="clearCycle()">Clear Cycle</button>
+          </div>
         </div>
         <div class="card-body">
           <div class="cycle-list" id="cycleList"></div>
           <div class="toolbar">
-            <button onclick="loadNextMap()">Load next map</button>
+            <button class="readiness-verified-api" onclick="loadNextMap()" title="Verified CS API action">Load next map</button>
             <button class="secondary" onclick="generateCycleCommands()">Show Cycle</button>
-            <button class="secondary" onclick="announceCycle()">Announce cycle</button>
+            <button class="secondary readiness-verified-api" onclick="announceCycle()" title="Verified CS API action">Announce cycle</button>
             <button class="secondary" onclick="copyConsole()">Copy Log</button>
           </div>
         </div>
@@ -242,31 +245,31 @@
           </div>
         </div>
       </section>
-    </div>
 
-    <section class="card available-panel">
-      <div class="card-header">
-        <div>
-          <h2>Available Maps</h2>
-          <span>Available maps on Farmor. Refresh or clear the list here.</span>
-        </div>
-        <div class="diagnostics-actions">
-          <div class="button-group">
-            <button id="refreshAvailableMapsBtn" class="secondary">Refresh Available Maps</button>
-            <button id="clearAvailableMapsBtn" class="secondary">Clear Available Maps</button>
+      <section class="card available-panel">
+        <div class="card-header">
+          <div>
+            <h2>Available Maps</h2>
+            <span>Available maps on Farmor. Refresh or clear the list here.</span>
           </div>
-          <label class="compact-toggle">
-            <input type="checkbox" id="availableToggle" />
-            Collapse
-          </label>
+          <div class="diagnostics-actions">
+            <div class="button-group">
+              <button id="refreshAvailableMapsBtn" class="secondary readiness-verified-api" title="Verified CS API action">Refresh Available Maps</button>
+              <button id="clearAvailableMapsBtn" class="secondary readiness-uncertain" title="Needs verification">Clear Available Maps</button>
+            </div>
+            <label class="compact-toggle">
+              <input type="checkbox" id="availableToggle" />
+              Collapse
+            </label>
+          </div>
         </div>
-      </div>
-      <div class="card-body available-content" id="availableContent">
-        <div id="importStatus" class="input-error" aria-live="polite"></div>
-        <div class="available-filter-buttons" id="availableFilterButtons" aria-label="Filter available maps by source"></div>
-        <div class="map-list" id="inventoryList"></div>
-      </div>
-    </section>
+        <div class="card-body available-content" id="availableContent">
+          <div id="importStatus" class="input-error" aria-live="polite"></div>
+          <div class="available-filter-buttons" id="availableFilterButtons" aria-label="Filter available maps by source"></div>
+          <div class="map-list" id="inventoryList"></div>
+        </div>
+      </section>
+    </div>
 
     <section class="card diagnostics-panel">
       <div class="card-header">
@@ -282,6 +285,13 @@
         </div>
       </div>
       <div class="card-body diagnostics-content" id="diagnosticsContent">
+        <details class="readiness-legend">
+          <summary>Action readiness</summary>
+          <span><i class="legend-dot verified"></i>API verified</span>
+          <span><i class="legend-dot uncertain"></i>Needs verification</span>
+          <span><i class="legend-rcon">RCON</i>Legacy/RCON</span>
+        </details>
+
         <div class="diagnostics-section">
           <div class="card-header diagnostics-subheader">
             <div>
@@ -290,6 +300,7 @@
             </div>
           </div>
           <div class="console" id="csApiResponseLog">API responses will appear here.</div>
+          <div class="status-note" id="playerStatusDiagnostics"></div>
         </div>
 
         <div class="diagnostics-section">

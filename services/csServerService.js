@@ -8,7 +8,19 @@ async function changeMap(mapId) {
   if (!mapId || typeof mapId !== 'string') {
     throw new Error('mapId is required and must be a string.');
   }
-  return csServerApiClient.sendServerCommand('CHANGE_MAP', { map: mapId });
+
+  try {
+    return await csServerApiClient.sendServerCommand('CHANGE_MAP', { map: mapId });
+  } catch (err) {
+    if (!err || err.status !== 400) {
+      throw err;
+    }
+
+    return csServerApiClient.sendServerCommandBody({
+      type: 'CHANGE_MAP',
+      map: mapId
+    });
+  }
 }
 
 async function restartMatch() {

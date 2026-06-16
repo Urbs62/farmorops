@@ -139,11 +139,16 @@ async function sendServerCommand(type, payload) {
   return request('/api/v1/server/commands', 'POST', body);
 }
 
+async function sendServerCommandBody(body) {
+  return request('/api/v1/server/commands', 'POST', body);
+}
+
 module.exports = {
   CsApiError,
   getMaps,
   getMapCycle,
   updateMapCycle,
   getServerStatus,
-  sendServerCommand
+  sendServerCommand,
+  sendServerCommandBody
 };

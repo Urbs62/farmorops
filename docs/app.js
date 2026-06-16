@@ -14,9 +14,19 @@ const LEGACY_MAP_STORAGE_KEYS = {
   oldSelectableMaps: 'farmorops.mapLibrary'
 };
 
+const DEFAULT_ANNOUNCEMENT_PREFIX = '>>>';
+const DEFAULT_ANNOUNCEMENT_SUFFIX = '<<<';
+const SERVER_STATUS_REFRESH_INITIAL_DELAY_MS = 1500;
+const SERVER_STATUS_REFRESH_RETRY_DELAY_MS = 2000;
+const SERVER_STATUS_REFRESH_MAX_RETRIES = 2;
+
 let maps = [];
 let inventoryMaps = [];
 let cycle = [];
+let cycleProgress = { playedMaps: [], currentMap: '' };
+let draggedCycleIndex = null;
+let cycleDropIndex = null;
+let lastServerStatus = null;
 let availableFilter = readStorage(STORAGE_KEYS.availableFilter, 'all');
 if (!['all', 'standard', 'workshop'].includes(availableFilter)) {
   availableFilter = 'all';
@@ -47,8 +57,10 @@ const csApiStatusMessage = document.getElementById('csApiStatusMessage');
 const csApiModeBadge = document.getElementById('csApiModeBadge');
 const csApiModeWarning = document.getElementById('csApiModeWarning');
 const csApiResponseLog = document.getElementById('csApiResponseLog');
+const playerStatusDiagnostics = document.getElementById('playerStatusDiagnostics');
 const csApiMapcycleWarning = document.getElementById('csApiMapcycleWarning');
 const csApiMapSelect = document.getElementById('csApiMapSelect');
+const csApiChangeMapInput = document.getElementById('csApiChangeMapInput');
 const csApiChangeMapBtn = document.getElementById('csApiChangeMapBtn');
 const csApiGetMapcycleBtn = document.getElementById('csApiGetMapcycleBtn');
 const csApiUpdateMapcycleBtn = document.getElementById('csApiUpdateMapcycleBtn');
@@ -82,6 +94,28 @@ function writeStorage(key, value) {
   } catch (error) {
     addCommand('# Could not save changes to localStorage');
   }
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
+}
+
+function getInlineStringArg(value) {
+  return escapeAttribute(JSON.stringify(value));
+}
+
+function formatAnnouncementMessage(message) {
+  return `${DEFAULT_ANNOUNCEMENT_PREFIX} ${message} ${DEFAULT_ANNOUNCEMENT_SUFFIX}`;
 }
 
 function loadCompactMode() {
@@ -222,6 +256,18 @@ function normalizeSharedMapState(state) {
   const source = state && typeof state === 'object' && !Array.isArray(state)
     ? state
     : {};
+  const tonightMapCycle = Array.isArray(source.tonightMapCycle) && source.tonightMapCycle.every(map => typeof map === 'string')
+    ? source.tonightMapCycle
+    : [];
+  const progress = source.tonightMapProgress && typeof source.tonightMapProgress === 'object' && !Array.isArray(source.tonightMapProgress)
+    ? source.tonightMapProgress
+    : {};
+  const playedMaps = Array.isArray(progress.playedMaps)
+    ? progress.playedMaps.filter(map => typeof map === 'string' && tonightMapCycle.includes(map))
+    : [];
+  const currentMap = typeof progress.currentMap === 'string' && tonightMapCycle.includes(progress.currentMap)
+    ? progress.currentMap
+    : '';
 
   return {
     availableMaps: Array.isArray(source.availableMaps) && source.availableMaps.every(isValidMap)
@@ -230,9 +276,11 @@ function normalizeSharedMapState(state) {
     selectableMaps: Array.isArray(source.selectableMaps) && source.selectableMaps.every(isValidMap)
       ? source.selectableMaps
       : [],
-    tonightMapCycle: Array.isArray(source.tonightMapCycle) && source.tonightMapCycle.every(map => typeof map === 'string')
-      ? source.tonightMapCycle
-      : []
+    tonightMapCycle,
+    tonightMapProgress: {
+      playedMaps: [...new Set(playedMaps)],
+      currentMap
+    }
   };
 }
 
@@ -240,7 +288,8 @@ function getCurrentSharedMapState() {
   return {
     availableMaps: inventoryMaps,
     selectableMaps: maps,
-    tonightMapCycle: cycle
+    tonightMapCycle: cycle,
+    tonightMapProgress: cycleProgress
   };
 }
 
@@ -249,6 +298,7 @@ function applySharedMapState(state) {
   inventoryMaps = nextState.availableMaps;
   maps = nextState.selectableMaps;
   cycle = nextState.tonightMapCycle;
+  cycleProgress = nextState.tonightMapProgress;
 }
 
 function hasSharedMapState(state) {
@@ -369,10 +419,10 @@ function renderAvailableMapOptions() {
     const title = map.type === 'workshop'
       ? `${map.name} (WORKSHOP)`
       : `${map.name} (BUILTIN)`;
-    const key = getMapKey(map);
-    const disabled = map.unavailable || !key ? 'disabled' : '';
+    const mapValue = getChangeMapValue(map);
+    const disabled = map.unavailable || !mapValue ? 'disabled' : '';
     return `
-      <option value="${key}" ${disabled}>${title}</option>
+      <option value="${escapeAttribute(mapValue)}" ${disabled}>${escapeHtml(title)}</option>
     `;
   }).join('');
 
@@ -382,9 +432,8 @@ function renderAvailableMapOptions() {
 function syncSelectedMapToInput() {
   if (!csApiMapSelect || !csApiChangeMapBtn) return;
   const selected = csApiMapSelect.value;
-  if (selected) {
-    const input = document.getElementById('csApiChangeMapInput');
-    if (input) input.value = selected;
+  if (selected && csApiChangeMapInput) {
+    csApiChangeMapInput.value = selected;
   }
 }
 
@@ -402,10 +451,88 @@ function renderHeaderServerStatus(status) {
     headerServerStatus.classList.toggle('offline', !isOnline);
   }
   if (headerCurrentMap) headerCurrentMap.textContent = status?.currentMap ? `Map: ${status.currentMap}` : '';
-  if (headerPlayerCount) headerPlayerCount.textContent = maxPlayers ? `Players: ${playerCount} / ${maxPlayers}` : '';
+  if (headerPlayerCount) {
+    headerPlayerCount.textContent = maxPlayers ? `Players: ${playerCount} / ${maxPlayers}` : `Players: ${playerCount}`;
+  }
+}
+
+function getStatusPlayers(status) {
+  return Array.isArray(status?.players) ? status.players : [];
+}
+
+function getPlayerCountLabel(status, players) {
+  const playerCount = typeof status?.playerCount === 'number' ? status.playerCount : 0;
+  const maxPlayers = typeof status?.maxPlayers === 'number' ? status.maxPlayers : 0;
+  const listedCount = players.length;
+  const baseLabel = maxPlayers ? `${playerCount} / ${maxPlayers}` : `${playerCount} total`;
+
+  if (playerCount !== listedCount) {
+    return `${baseLabel} (${listedCount} player details available)`;
+  }
+
+  return baseLabel;
+}
+
+function formatPlayerDuration(player) {
+  const seconds = Number(
+    player?.durationSeconds
+    ?? player?.connectedSeconds
+    ?? player?.timeSeconds
+    ?? player?.playTimeSeconds
+  );
+
+  if (!Number.isFinite(seconds) || seconds <= 0) return '';
+
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 1) return '<1 min';
+  if (minutes < 60) return `${minutes} min`;
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes ? `${hours} h ${remainingMinutes} min` : `${hours} h`;
+}
+
+function formatPlayerTeam(player) {
+  const team = String(player?.teamName || player?.team || '').trim();
+  if (!team || ['null', 'undefined', 'unknown', 'none'].includes(team.toLowerCase())) return '';
+
+  const normalized = team.toLowerCase();
+  if (['ct', 'counter-terrorist', 'counterterrorist', 'counter terrorist'].includes(normalized)) return 'CT';
+  if (['t', 'terrorist'].includes(normalized)) return 'T';
+  if (['spectator', 'spectators', 'spec'].includes(normalized)) return 'Spectator';
+
+  return team;
+}
+
+function getPlayerDisplayName(player, index) {
+  const name = String(player?.nickname || player?.name || player?.playerName || '').trim();
+  if (name && !['null', 'undefined'].includes(name.toLowerCase())) return name;
+  return 'Player details unavailable';
+}
+
+function renderPlayerItem(player, index) {
+  const name = getPlayerDisplayName(player, index);
+  const team = formatPlayerTeam(player);
+  const duration = formatPlayerDuration(player);
+  const teamText = team ? ` (${team})` : '';
+  const durationText = duration ? ` - ${duration}` : '';
+
+  return `
+    <div class="player-item">
+      <strong>${escapeHtml(name)}${escapeHtml(teamText)}${escapeHtml(durationText)}</strong>
+    </div>
+  `;
+}
+
+function renderPlayerDiagnostics(status, players) {
+  if (!playerStatusDiagnostics) return;
+  const playerCount = typeof status?.playerCount === 'number' ? status.playerCount : 0;
+  playerStatusDiagnostics.textContent = `Raw player count: ${playerCount}. Listed player count: ${players.length}.`;
 }
 
 function renderServerStatus(status) {
+  lastServerStatus = status || null;
+  const players = getStatusPlayers(status);
   renderHeaderServerStatus(status);
   if (csApiCurrentMap) {
     csApiCurrentMap.textContent = status?.currentMap || '—';
@@ -416,30 +543,115 @@ function renderServerStatus(status) {
   }
 
   if (csApiPlayerCount) {
-    const playerCount = typeof status?.playerCount === 'number' ? status.playerCount : 0;
-    const maxPlayers = typeof status?.maxPlayers === 'number' ? status.maxPlayers : 0;
-    csApiPlayerCount.textContent = `${playerCount} / ${maxPlayers}`;
+    csApiPlayerCount.textContent = getPlayerCountLabel(status, players);
   }
 
   if (csApiPlayerList) {
-    const players = Array.isArray(status?.players) ? status.players : [];
     if (!players.length) {
       csApiPlayerList.innerHTML = '<div class="player-item">No players connected.</div>';
+      renderPlayerDiagnostics(status, players);
       return;
     }
 
-    csApiPlayerList.innerHTML = players.map(player => `
-      <div class="player-item">
-        <strong>${player.name}</strong>
-        <small>${player.steamId}</small>
-        <div>${player.score} pts · ${player.durationSeconds}s</div>
-      </div>
-    `).join('');
+    csApiPlayerList.innerHTML = players.map(renderPlayerItem).join('');
   }
+
+  renderPlayerDiagnostics(status, players);
 }
 
 function getMapKey(map) {
   return map.id || map.value || map.name || '';
+}
+
+function getChangeMapValue(map) {
+  if (!map || typeof map !== 'object') return '';
+
+  if (map.type === 'workshop' || map.origin === 'WORKSHOP') {
+    const workshopValue = map.id && String(map.id).startsWith('workshop:')
+      ? map.id
+      : map.value || map.workshopId || map.name || '';
+    return String(workshopValue).startsWith('workshop:')
+      ? String(workshopValue)
+      : `workshop:${workshopValue}`;
+  }
+
+  return map.value || map.name || map.id || '';
+}
+
+function normalizeMapToken(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^workshop:/, '');
+}
+
+function getCycleMapCandidates(cycleMap) {
+  const matched = maps.find(map => map.name === cycleMap);
+  const candidates = [cycleMap];
+
+  if (matched) {
+    candidates.push(matched.name, matched.value, matched.id, getChangeMapValue(matched));
+  }
+
+  return candidates
+    .filter(Boolean)
+    .map(normalizeMapToken);
+}
+
+function findCycleMapByServerValue(value) {
+  const normalizedValue = normalizeMapToken(value);
+  if (!normalizedValue) return '';
+
+  return cycle.find(cycleMap => getCycleMapCandidates(cycleMap).includes(normalizedValue)) || '';
+}
+
+function getCleanCycleProgress(progress = cycleProgress) {
+  const playedMaps = Array.isArray(progress.playedMaps)
+    ? progress.playedMaps.filter(map => cycle.includes(map) && map !== progress.currentMap)
+    : [];
+  const currentMap = typeof progress.currentMap === 'string' && cycle.includes(progress.currentMap)
+    ? progress.currentMap
+    : '';
+
+  return {
+    playedMaps: [...new Set(playedMaps)],
+    currentMap
+  };
+}
+
+async function saveCycleProgress(nextProgress) {
+  cycleProgress = getCleanCycleProgress(nextProgress);
+  renderCycle();
+  await saveSharedMapState();
+  renderCycle();
+}
+
+async function updateCycleProgressForLoadedMap(mapValue) {
+  const cycleMap = findCycleMapByServerValue(mapValue);
+  if (!cycleMap) return;
+
+  const cycleIndex = cycle.indexOf(cycleMap);
+  const playedMaps = new Set(cycleProgress.playedMaps || []);
+  cycle.slice(0, cycleIndex).forEach(map => playedMaps.add(map));
+  playedMaps.delete(cycleMap);
+
+  await saveCycleProgress({
+    playedMaps: [...playedMaps],
+    currentMap: cycleMap
+  });
+}
+
+async function syncCycleProgressFromServerStatus(status) {
+  const cycleMap = findCycleMapByServerValue(status?.currentMap);
+  if (!cycleMap || cycleProgress.currentMap === cycleMap) return;
+  const currentIndex = cycle.indexOf(cycleProgress.currentMap);
+  const statusIndex = cycle.indexOf(cycleMap);
+  if (currentIndex >= 0 && statusIndex >= 0 && statusIndex < currentIndex) return;
+
+  await saveCycleProgress({
+    playedMaps: cycleProgress.playedMaps || [],
+    currentMap: cycleMap
+  });
 }
 
 function getAvailableMapSourceType(map) {
@@ -513,8 +725,9 @@ function updateAvailableMapsFromServer(items) {
 }
 
 async function refreshServerStatus() {
-  if (!refreshServerStatusBtn) return;
-  refreshServerStatusBtn.disabled = true;
+  if (refreshServerStatusBtn) {
+    refreshServerStatusBtn.disabled = true;
+  }
   setServerStatusMessage('Loading server status...', 'info');
 
   try {
@@ -525,7 +738,7 @@ async function refreshServerStatus() {
     if (!response.ok) {
       const errorMessage = body?.message || body?.error || response.statusText;
       setServerStatusMessage(`Failed to load server status: ${response.status} ${errorMessage}`, 'error');
-      return;
+      return null;
     }
 
     if (body?.commandMode) {
@@ -542,20 +755,71 @@ async function refreshServerStatus() {
     }
 
     renderServerStatus(body);
+    try {
+      await syncCycleProgressFromServerStatus(body);
+    } catch (err) {
+      showSharedMapStateError(err);
+    }
     setServerStatusMessage('Server status updated.', 'success');
+    return body;
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
     appendCsApiResponseLog('Get server status', null, { error: message });
     setServerStatusMessage(`Status error: ${message}`, 'error');
+    return null;
   } finally {
-    refreshServerStatusBtn.disabled = false;
+    if (refreshServerStatusBtn) {
+      refreshServerStatusBtn.disabled = false;
+    }
   }
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function normalizeStatusMapName(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function statusStillShowsPreviousMap(status, previousMap) {
+  if (!previousMap || !status?.currentMap) return false;
+  return normalizeStatusMapName(status.currentMap) === normalizeStatusMapName(previousMap);
+}
+
+async function refreshServerStatusAfterAction({
+  logMessage,
+  updatedMessage = 'Server status updated',
+  previousMap = ''
+} = {}) {
+  if (logMessage) {
+    addCommand(`# ${logMessage}`);
+  }
+
+  await delay(SERVER_STATUS_REFRESH_INITIAL_DELAY_MS);
+
+  for (let attempt = 0; attempt <= SERVER_STATUS_REFRESH_MAX_RETRIES; attempt += 1) {
+    const status = await refreshServerStatus();
+    const needsRetry = !status || statusStillShowsPreviousMap(status, previousMap);
+
+    if (!needsRetry) {
+      addCommand(`# ${updatedMessage}`);
+      return status;
+    }
+
+    if (attempt < SERVER_STATUS_REFRESH_MAX_RETRIES) {
+      await delay(SERVER_STATUS_REFRESH_RETRY_DELAY_MS);
+    }
+  }
+
+  return null;
 }
 
 async function changeServerMap(mapIdOverride) {
   let mapId = typeof mapIdOverride === 'string'
     ? mapIdOverride.trim()
     : '';
+  const previousMap = lastServerStatus?.currentMap || '';
 
   if (!mapId) {
     if (csApiMapSelect && csApiMapSelect.value) {
@@ -582,7 +846,7 @@ async function changeServerMap(mapIdOverride) {
       body: JSON.stringify({ mapId })
     });
     const body = await response.json().catch(() => null);
-    appendCsApiResponseLog('Change map', response, body);
+    appendCsApiResponseLog(`Change map: ${mapId}`, response, body);
 
     if (!response.ok) {
       const errorMessage = body?.message || body?.error || response.statusText;
@@ -595,10 +859,19 @@ async function changeServerMap(mapIdOverride) {
     }
 
     setServerStatusMessage(`Map change requested: ${mapId}`, 'success');
+    try {
+      await updateCycleProgressForLoadedMap(mapId);
+    } catch (err) {
+      showSharedMapStateError(err);
+    }
+    await refreshServerStatusAfterAction({
+      logMessage: 'Refreshing server status after map change',
+      previousMap
+    });
     return true;
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
-    appendCsApiResponseLog('Change map', null, { error: message });
+    appendCsApiResponseLog(`Change map: ${mapId}`, null, { error: message });
     setServerStatusMessage(`Change map error: ${message}`, 'error');
     return false;
   } finally {
@@ -626,6 +899,9 @@ async function restartMatchApi() {
       return;
     }
     setServerStatusMessage('Restart match requested.', 'success');
+    await refreshServerStatusAfterAction({
+      logMessage: 'Refreshing server status after restart match'
+    });
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
     appendCsApiResponseLog('Restart match', null, { error: message });
@@ -790,6 +1066,9 @@ async function execConfig(config, label) {
     }
 
     setServerStatusMessage(`Exec config requested: ${config}`, 'success');
+    await refreshServerStatusAfterAction({
+      logMessage: `Refreshing server status after exec config ${config}`
+    });
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
     appendCsApiResponseLog(`Exec config ${config}`, null, { error: message });
@@ -1053,14 +1332,85 @@ function renderCycle() {
     return;
   }
 
-  cycleList.innerHTML = cycle.map((map, index) => `
-    <div class="cycle-item">
+  cycleProgress = getCleanCycleProgress();
+
+  cycleList.innerHTML = cycle.map((map, index) => {
+    const isCurrent = cycleProgress.currentMap === map;
+    const isPlayed = !isCurrent && cycleProgress.playedMaps.includes(map);
+    const progressIcon = isCurrent ? '&#9654;' : isPlayed ? '&#10003;' : '';
+    const progressLabel = isCurrent ? 'Current map' : isPlayed ? 'Played map' : 'Upcoming map';
+
+    return `
+    <div class="cycle-item${isCurrent ? ' cycle-current' : ''}${isPlayed ? ' cycle-played' : ''}" draggable="true" data-cycle-index="${index}">
+      <button
+        class="drag-handle"
+        type="button"
+        aria-label="Drag ${escapeHtml(map)}"
+        title="Drag to reorder"
+      >&#8942;&#8942;</button>
       <span class="nr">${index + 1}</span>
-      <span class="map-name">${map}</span>
-      <button class="secondary" onclick="loadMap('${map}')">Load</button>
+      <span class="cycle-progress-icon" aria-label="${progressLabel}" title="${progressLabel}">${progressIcon}</span>
+      <span class="map-name">${escapeHtml(map)}</span>
+      <div class="cycle-move-actions" aria-label="Move ${escapeHtml(map)}">
+        <button class="secondary icon-button" onclick="moveMapInCycle(${index}, -1)" ${index === 0 ? 'disabled' : ''} aria-label="Move ${escapeHtml(map)} up">&uarr;</button>
+        <button class="secondary icon-button" onclick="moveMapInCycle(${index}, 1)" ${index === cycle.length - 1 ? 'disabled' : ''} aria-label="Move ${escapeHtml(map)} down">&darr;</button>
+      </div>
+      <button class="secondary readiness-verified-api" onclick="loadMap(${getInlineStringArg(map)})" title="Verified CS API action">Load</button>
       <button class="danger" onclick="removeMap(${index})">Remove</button>
     </div>
-  `).join('');
+  `;
+  }).join('');
+}
+
+function clearCycleDropFeedback() {
+  cycleList.querySelectorAll('.cycle-drop-before, .cycle-drop-after').forEach(item => {
+    item.classList.remove('cycle-drop-before', 'cycle-drop-after');
+  });
+}
+
+function setCycleDropFeedback(item, position) {
+  clearCycleDropFeedback();
+  item.classList.add(position === 'after' ? 'cycle-drop-after' : 'cycle-drop-before');
+}
+
+function getCycleDropIndex(event, item) {
+  const index = Number(item.dataset.cycleIndex);
+  const rect = item.getBoundingClientRect();
+  const position = event.clientY > rect.top + (rect.height / 2) ? 'after' : 'before';
+  return {
+    index: position === 'after' ? index + 1 : index,
+    position
+  };
+}
+
+async function reorderCycle(fromIndex, toIndex) {
+  if (fromIndex === null || fromIndex < 0 || fromIndex >= cycle.length) return;
+  if (toIndex < 0 || toIndex > cycle.length) return;
+  if (toIndex === fromIndex || toIndex === fromIndex + 1) return;
+
+  const previousCycle = [...cycle];
+  const nextCycle = [...cycle];
+  const [movedMap] = nextCycle.splice(fromIndex, 1);
+  const insertIndex = toIndex > fromIndex ? toIndex - 1 : toIndex;
+  nextCycle.splice(insertIndex, 0, movedMap);
+  cycle = nextCycle;
+  renderCycle();
+
+  try {
+    await saveSharedMapState();
+    renderCycle();
+    addCommand(`# Reordered tonight cycle: ${movedMap}`);
+  } catch (err) {
+    cycle = previousCycle;
+    renderCycle();
+    showSharedMapStateError(err);
+  }
+}
+
+async function moveMapInCycle(index, direction) {
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= cycle.length) return;
+  await reorderCycle(index, direction > 0 ? targetIndex + 1 : targetIndex);
 }
 
 async function addMapToCycle(map) {
@@ -1123,6 +1473,22 @@ async function clearCycle() {
     addCommand('# Cleared tonight map cycle');
   } catch (err) {
     cycle = previousCycle;
+    renderCycle();
+    showSharedMapStateError(err);
+  }
+}
+
+async function resetCycleProgress() {
+  const previousProgress = { ...cycleProgress, playedMaps: [...(cycleProgress.playedMaps || [])] };
+  cycleProgress = { playedMaps: [], currentMap: '' };
+  renderCycle();
+
+  try {
+    await saveSharedMapState();
+    renderCycle();
+    addCommand('# Reset tonight cycle progress');
+  } catch (err) {
+    cycleProgress = previousProgress;
     renderCycle();
     showSharedMapStateError(err);
   }
@@ -1545,6 +1911,53 @@ if (libraryToggle) {
   });
 }
 
+if (cycleList) {
+  cycleList.addEventListener('dragstart', (event) => {
+    const item = event.target.closest('.cycle-item');
+    if (!item) return;
+
+    draggedCycleIndex = Number(item.dataset.cycleIndex);
+    cycleDropIndex = draggedCycleIndex;
+    item.classList.add('cycle-dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(draggedCycleIndex));
+  });
+
+  cycleList.addEventListener('dragover', (event) => {
+    if (draggedCycleIndex === null) return;
+
+    const item = event.target.closest('.cycle-item');
+    if (!item) return;
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const dropTarget = getCycleDropIndex(event, item);
+    cycleDropIndex = dropTarget.index;
+    setCycleDropFeedback(item, dropTarget.position);
+  });
+
+  cycleList.addEventListener('drop', async (event) => {
+    if (draggedCycleIndex === null || cycleDropIndex === null) return;
+
+    event.preventDefault();
+    const fromIndex = draggedCycleIndex;
+    const toIndex = cycleDropIndex;
+    draggedCycleIndex = null;
+    cycleDropIndex = null;
+    clearCycleDropFeedback();
+    await reorderCycle(fromIndex, toIndex);
+  });
+
+  cycleList.addEventListener('dragend', () => {
+    draggedCycleIndex = null;
+    cycleDropIndex = null;
+    clearCycleDropFeedback();
+    cycleList.querySelectorAll('.cycle-dragging').forEach(item => {
+      item.classList.remove('cycle-dragging');
+    });
+  });
+}
+
 setCompactMode(loadCompactMode());
 initializeDiagnosticsState();
 initializeAvailableState();
@@ -1592,7 +2005,7 @@ async function sendAnnouncement() {
     return;
   }
 
-  const success = await sendServerMessage(message);
+  const success = await sendServerMessage(formatAnnouncementMessage(message));
   if (!success) {
     return;
   }

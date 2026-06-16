@@ -1600,14 +1600,14 @@
     }
   ],
   "tonightMapCycle": [
-    "Assembly",
-    "Blagai (CS2) (unofficial port)",
-    "Boyard",
-    "De_Sable (Wingman)",
-    "Drawbridge",
-    "Foroglio",
-    "Sakura",
+    "Splat",
     "Shortdust (de_shortdust)",
-    "Monarch"
-  ]
+    "Sakura",
+    "Rooftop",
+    "Transit WIP (Visual)"
+  ],
+  "tonightMapProgress": {
+    "playedMaps": [],
+    "currentMap": ""
+  }
 }
