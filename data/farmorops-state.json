@@ -1597,6 +1597,96 @@
       "validForMapCycle": false,
       "unavailable": false,
       "source": "inventory"
+    },
+    {
+      "id": "workshop:3339983232",
+      "name": "Agency",
+      "type": "workshop",
+      "value": "3339983232",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3329258290",
+      "name": "Basalt",
+      "type": "workshop",
+      "value": "3329258290",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3663976049",
+      "name": "Brownstone",
+      "type": "workshop",
+      "value": "3663976049",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3437809122",
+      "name": "Cache",
+      "type": "workshop",
+      "value": "3437809122",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3127729110",
+      "name": "Dust",
+      "type": "workshop",
+      "value": "3127729110",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3408790618",
+      "name": "El Dorado",
+      "type": "workshop",
+      "value": "3408790618",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3674217330",
+      "name": "Northern",
+      "type": "workshop",
+      "value": "3674217330",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3522144043",
+      "name": "Poseidon",
+      "type": "workshop",
+      "value": "3522144043",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
+    },
+    {
+      "id": "workshop:3643331442",
+      "name": "Sanctum",
+      "type": "workshop",
+      "value": "3643331442",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "source": "inventory"
     }
   ],
   "tonightMapCycle": [

@@ -321,6 +321,33 @@ main {
   gap: 8px;
 }
 
+.favorite-button {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.favorite-button:hover,
+.favorite-button:focus-visible {
+  color: var(--accent);
+  border-color: rgba(242, 184, 75, 0.28);
+  background: rgba(242, 184, 75, 0.08);
+}
+
+.favorite-button.active {
+  color: var(--accent);
+}
+
 .map-badge {
   display: inline-flex;
   align-items: center;
@@ -628,6 +655,12 @@ body.compact-mode .icon-button {
   height: 28px;
 }
 
+body.compact-mode .favorite-button {
+  width: 22px;
+  height: 22px;
+  font-size: 16px;
+}
+
 body.compact-mode .map-row-left {
   gap: 4px;
 }
@@ -781,7 +814,7 @@ body.compact-mode .readiness-legend {
 
 .cycle-item {
   display: grid;
-  grid-template-columns: 24px 30px 18px minmax(0, 1fr) auto auto auto;
+  grid-template-columns: 24px 30px 18px 24px minmax(0, 1fr) auto auto auto;
   align-items: center;
   gap: 8px;
   padding: 10px 12px;

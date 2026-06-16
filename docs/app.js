@@ -28,7 +28,7 @@ let draggedCycleIndex = null;
 let cycleDropIndex = null;
 let lastServerStatus = null;
 let availableFilter = readStorage(STORAGE_KEYS.availableFilter, 'all');
-if (!['all', 'standard', 'workshop'].includes(availableFilter)) {
+if (!['all', 'favorites', 'standard', 'workshop'].includes(availableFilter)) {
   availableFilter = 'all';
 }
 let consoleLines = [];
@@ -252,6 +252,13 @@ function isValidMap(map) {
     && typeof map.value === 'string';
 }
 
+function normalizeStoredMap(map) {
+  return {
+    ...map,
+    favorite: map.favorite === true
+  };
+}
+
 function normalizeSharedMapState(state) {
   const source = state && typeof state === 'object' && !Array.isArray(state)
     ? state
@@ -271,10 +278,10 @@ function normalizeSharedMapState(state) {
 
   return {
     availableMaps: Array.isArray(source.availableMaps) && source.availableMaps.every(isValidMap)
-      ? source.availableMaps
+      ? source.availableMaps.map(normalizeStoredMap)
       : [],
     selectableMaps: Array.isArray(source.selectableMaps) && source.selectableMaps.every(isValidMap)
-      ? source.selectableMaps
+      ? source.selectableMaps.map(normalizeStoredMap)
       : [],
     tonightMapCycle,
     tonightMapProgress: {
@@ -415,7 +422,7 @@ function appendCsApiResponseLog(title, response, body) {
 function renderAvailableMapOptions() {
   if (!csApiMapSelect) return;
 
-  const options = inventoryMaps.map(map => {
+  const options = [...inventoryMaps].sort(compareMapsByFavoriteThenName).map(map => {
     const title = map.type === 'workshop'
       ? `${map.name} (WORKSHOP)`
       : `${map.name} (BUILTIN)`;
@@ -561,6 +568,96 @@ function renderServerStatus(status) {
 
 function getMapKey(map) {
   return map.id || map.value || map.name || '';
+}
+
+function getMapIdentity(map) {
+  return String(map?.id || map?.name || map?.value || '');
+}
+
+function areSameMapIdentity(left, right) {
+  if (!left || !right) return false;
+  if (left.id || right.id) {
+    return Boolean(left.id && right.id && left.id === right.id);
+  }
+
+  if (left.value && right.value) {
+    return left.type === right.type && left.value === right.value;
+  }
+
+  return left.type === right.type && left.name === right.name;
+}
+
+function compareMapsByFavoriteThenName(left, right) {
+  if (Boolean(left.favorite) !== Boolean(right.favorite)) {
+    return left.favorite ? -1 : 1;
+  }
+
+  return String(left.name || '').localeCompare(String(right.name || ''), 'sv', { sensitivity: 'base' });
+}
+
+function getFavoriteForMap(map) {
+  const inventoryMatch = inventoryMaps.find(item => areSameMapIdentity(item, map));
+  if (inventoryMatch) return Boolean(inventoryMatch.favorite);
+
+  const selectableMatch = maps.find(item => areSameMapIdentity(item, map));
+  return Boolean(selectableMatch?.favorite);
+}
+
+function findMapByCycleName(mapName) {
+  return maps.find(map => map.name === mapName)
+    || inventoryMaps.find(map => map.name === mapName)
+    || { name: mapName, type: 'standard', value: mapName };
+}
+
+function renderFavoriteButton(map) {
+  const favorite = getFavoriteForMap(map);
+  const label = favorite ? `Remove ${map.name} from favorites` : `Mark ${map.name} as favorite`;
+
+  return `
+    <button
+      type="button"
+      class="favorite-button${favorite ? ' active' : ''}"
+      data-action="toggle-favorite"
+      data-map-key="${escapeAttribute(getMapIdentity(map))}"
+      aria-label="${escapeAttribute(label)}"
+      aria-pressed="${favorite}"
+      title="${escapeAttribute(label)}"
+    >${favorite ? '★' : '☆'}</button>
+  `;
+}
+
+async function toggleMapFavorite(mapKey) {
+  const allMaps = [...inventoryMaps, ...maps];
+  const target = allMaps.find(map => getMapIdentity(map) === mapKey);
+  if (!target) return;
+
+  const nextFavorite = !getFavoriteForMap(target);
+  const applyFavorite = map => areSameMapIdentity(map, target)
+    ? { ...map, favorite: nextFavorite }
+    : map;
+  const previousInventoryMaps = inventoryMaps;
+  const previousMaps = maps;
+
+  inventoryMaps = inventoryMaps.map(applyFavorite);
+  maps = maps.map(applyFavorite);
+  renderInventory();
+  renderMaps();
+  renderCycle();
+
+  try {
+    await saveSharedMapState();
+    renderInventory();
+    renderMaps();
+    renderCycle();
+    addCommand(`# ${nextFavorite ? 'Favorited' : 'Unfavorited'} map: ${target.name}`);
+  } catch (err) {
+    inventoryMaps = previousInventoryMaps;
+    maps = previousMaps;
+    renderInventory();
+    renderMaps();
+    renderCycle();
+    showSharedMapStateError(err);
+  }
 }
 
 function getChangeMapValue(map) {
@@ -1187,12 +1284,17 @@ async function removeSelectableMap(mapName) {
 function getAvailableFilterCounts() {
   return {
     all: inventoryMaps.length,
+    favorites: inventoryMaps.filter(map => getFavoriteForMap(map)).length,
     standard: inventoryMaps.filter(map => getAvailableMapSourceType(map) === 'standard').length,
     workshop: inventoryMaps.filter(map => getAvailableMapSourceType(map) === 'workshop').length
   };
 }
 
 function getFilteredInventoryMaps() {
+  if (availableFilter === 'favorites') {
+    return inventoryMaps.filter(map => getFavoriteForMap(map));
+  }
+
   if (availableFilter === 'standard') {
     return inventoryMaps.filter(map => getAvailableMapSourceType(map) === 'standard');
   }
@@ -1210,6 +1312,7 @@ function renderAvailableFilterButtons() {
   const counts = getAvailableFilterCounts();
   const buttons = [
     { key: 'all', label: 'All', count: counts.all },
+    { key: 'favorites', label: 'Favorites', count: counts.favorites },
     { key: 'standard', label: 'Standard', count: counts.standard },
     { key: 'workshop', label: 'Workshop', count: counts.workshop }
   ];
@@ -1227,7 +1330,7 @@ function renderAvailableFilterButtons() {
 }
 
 function setAvailableFilter(filter) {
-  const nextFilter = filter === 'standard' || filter === 'workshop' ? filter : 'all';
+  const nextFilter = ['favorites', 'standard', 'workshop'].includes(filter) ? filter : 'all';
   availableFilter = nextFilter;
   writeStorage(STORAGE_KEYS.availableFilter, availableFilter);
   renderAvailableFilterButtons();
@@ -1237,7 +1340,7 @@ function setAvailableFilter(filter) {
 function renderInventory() {
   if (!inventoryList) return;
 
-  const filteredMaps = getFilteredInventoryMaps();
+  const filteredMaps = getFilteredInventoryMaps().sort(compareMapsByFavoriteThenName);
 
   if (!filteredMaps.length) {
     inventoryList.innerHTML = '<div class="empty">No maps match the selected source filter.</div>';
@@ -1266,6 +1369,7 @@ function renderInventory() {
       <div class="map-row">
         <div class="map-row-left">
           <div class="map-title-row">
+            ${renderFavoriteButton(map)}
             <span class="map-name">${map.name}</span>
             <span class="map-badge map-badge-${badgeClass}">${badgeType}</span>
           </div>
@@ -1288,7 +1392,9 @@ function renderInventory() {
 
 function renderMaps() {
   const query = mapSearch.value.toLowerCase().trim();
-  const filtered = maps.filter(map => map.name.toLowerCase().includes(query) || map.value.toLowerCase().includes(query));
+  const filtered = maps
+    .filter(map => map.name.toLowerCase().includes(query) || map.value.toLowerCase().includes(query))
+    .sort(compareMapsByFavoriteThenName);
 
   if (!filtered.length) {
     mapList.innerHTML = '<div class="empty">No selectable maps yet. Add maps from Available on Farmor.</div>';
@@ -1309,6 +1415,7 @@ function renderMaps() {
       <div class="map-row">
         <div class="map-row-left">
           <div class="map-title-row">
+            ${renderFavoriteButton(map)}
             <span class="map-name">${map.name}</span>
             ${origin}
           </div>
@@ -1335,6 +1442,7 @@ function renderCycle() {
   cycleProgress = getCleanCycleProgress();
 
   cycleList.innerHTML = cycle.map((map, index) => {
+    const mapDetails = findMapByCycleName(map);
     const isCurrent = cycleProgress.currentMap === map;
     const isPlayed = !isCurrent && cycleProgress.playedMaps.includes(map);
     const progressIcon = isCurrent ? '&#9654;' : isPlayed ? '&#10003;' : '';
@@ -1350,6 +1458,7 @@ function renderCycle() {
       >&#8942;&#8942;</button>
       <span class="nr">${index + 1}</span>
       <span class="cycle-progress-icon" aria-label="${progressLabel}" title="${progressLabel}">${progressIcon}</span>
+      ${renderFavoriteButton(mapDetails)}
       <span class="map-name">${escapeHtml(map)}</span>
       <div class="cycle-move-actions" aria-label="Move ${escapeHtml(map)}">
         <button class="secondary icon-button" onclick="moveMapInCycle(${index}, -1)" ${index === 0 ? 'disabled' : ''} aria-label="Move ${escapeHtml(map)} up">&uarr;</button>
@@ -1817,10 +1926,32 @@ mapSearch.addEventListener('input', renderMaps);
 
 if (inventoryList) {
   inventoryList.addEventListener('click', event => {
+    const favoriteButton = event.target.closest('button[data-action="toggle-favorite"]');
+    if (favoriteButton) {
+      toggleMapFavorite(favoriteButton.dataset.mapKey);
+      return;
+    }
+
     const button = event.target.closest('button[data-action="add-inventory"]');
     if (!button) return;
     const mapName = button.dataset.map;
     addInventoryMap(mapName);
+  });
+}
+
+if (mapList) {
+  mapList.addEventListener('click', event => {
+    const favoriteButton = event.target.closest('button[data-action="toggle-favorite"]');
+    if (!favoriteButton) return;
+    toggleMapFavorite(favoriteButton.dataset.mapKey);
+  });
+}
+
+if (cycleList) {
+  cycleList.addEventListener('click', event => {
+    const favoriteButton = event.target.closest('button[data-action="toggle-favorite"]');
+    if (!favoriteButton) return;
+    toggleMapFavorite(favoriteButton.dataset.mapKey);
   });
 }
 

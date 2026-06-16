@@ -87,9 +87,16 @@ function normalizeMapStatePayload(payload) {
     ? progress.currentMap
     : '';
 
+  const normalizeStoredMaps = maps => Array.isArray(maps)
+    ? maps.map(map => ({
+      ...map,
+      favorite: map && map.favorite === true
+    }))
+    : [];
+
   return {
-    availableMaps: Array.isArray(state.availableMaps) ? state.availableMaps : [],
-    selectableMaps: Array.isArray(state.selectableMaps) ? state.selectableMaps : [],
+    availableMaps: normalizeStoredMaps(state.availableMaps),
+    selectableMaps: normalizeStoredMaps(state.selectableMaps),
     tonightMapCycle,
     tonightMapProgress: {
       playedMaps: [...new Set(playedMaps)],
