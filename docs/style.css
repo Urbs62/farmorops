@@ -504,6 +504,20 @@ button[disabled] {
   margin-top: 18px;
 }
 
+.preset-announcements {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+button.compact-preset {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
 .input-row {
   display: flex;
   gap: 10px;

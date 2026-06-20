@@ -14,8 +14,7 @@ const LEGACY_MAP_STORAGE_KEYS = {
   oldSelectableMaps: 'farmorops.mapLibrary'
 };
 
-const DEFAULT_ANNOUNCEMENT_PREFIX = '>>>';
-const DEFAULT_ANNOUNCEMENT_SUFFIX = '<<<';
+const ANNOUNCEMENT_SEPARATOR = '====================';
 const SERVER_STATUS_REFRESH_INITIAL_DELAY_MS = 1500;
 const SERVER_STATUS_REFRESH_RETRY_DELAY_MS = 2000;
 const SERVER_STATUS_REFRESH_MAX_RETRIES = 2;
@@ -115,7 +114,7 @@ function getInlineStringArg(value) {
 }
 
 function formatAnnouncementMessage(message) {
-  return `${DEFAULT_ANNOUNCEMENT_PREFIX} ${message} ${DEFAULT_ANNOUNCEMENT_SUFFIX}`;
+  return [ANNOUNCEMENT_SEPARATOR, message, ANNOUNCEMENT_SEPARATOR];
 }
 
 function loadCompactMode() {
@@ -417,6 +416,12 @@ function appendCsApiResponseLog(title, response, body) {
   const header = `[${timestamp}] ${title} — ${statusText}`;
   const bodyText = body != null ? JSON.stringify(body, null, 2) : '<no body>';
   csApiResponseLog.textContent = `${header}\n${bodyText}\n\n${csApiResponseLog.textContent || ''}`;
+}
+
+function appendFormattedAnnouncementLog(lines) {
+  if (!csApiResponseLog) return;
+  const timestamp = new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  csApiResponseLog.textContent = `[${timestamp}] Formatted server message sent:\n${lines.join('\n')}\n\n${csApiResponseLog.textContent || ''}`;
 }
 
 function renderAvailableMapOptions() {
@@ -1055,6 +1060,34 @@ async function sendServerMessage(messageOverride) {
     if (csApiSendMessageBtn) {
       csApiSendMessageBtn.disabled = false;
     }
+  }
+}
+
+async function sendFormattedServerMessage(message) {
+  const trimmedMessage = message.trim();
+  if (!trimmedMessage) {
+    setServerStatusMessage('Message text is required.', 'error');
+    return false;
+  }
+
+  const formattedLines = formatAnnouncementMessage(trimmedMessage);
+  for (const line of formattedLines) {
+    const success = await sendServerMessage(line);
+    if (!success) return false;
+  }
+
+  appendFormattedAnnouncementLog(formattedLines);
+  return true;
+}
+
+async function sendPresetAnnouncement(button) {
+  const message = button?.dataset.message || '';
+  if (button) button.disabled = true;
+
+  try {
+    return await sendFormattedServerMessage(message);
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 
@@ -1993,7 +2026,12 @@ if (csApiRestartMatchBtn) {
 }
 
 if (csApiSendMessageBtn) {
-  csApiSendMessageBtn.addEventListener('click', sendServerMessage);
+  csApiSendMessageBtn.addEventListener('click', async () => {
+    const success = await sendFormattedServerMessage(csApiMessageInput?.value || '');
+    if (success && csApiMessageInput) {
+      csApiMessageInput.value = '';
+    }
+  });
 }
 
 if (compactModeToggle) {
@@ -2136,7 +2174,7 @@ async function sendAnnouncement() {
     return;
   }
 
-  const success = await sendServerMessage(formatAnnouncementMessage(message));
+  const success = await sendFormattedServerMessage(message);
   if (!success) {
     return;
   }

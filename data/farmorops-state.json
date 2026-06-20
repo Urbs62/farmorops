@@ -1,490 +1,14 @@
 {
   "availableMaps": [
     {
-      "id": "ar_baggage",
-      "name": "ar_baggage",
-      "type": "standard",
-      "value": "ar_baggage",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "ar_baggage_vanity",
-      "name": "ar_baggage_vanity",
-      "type": "standard",
-      "value": "ar_baggage_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "ar_pool_day",
-      "name": "ar_pool_day",
-      "type": "standard",
-      "value": "ar_pool_day",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "ar_shoots",
-      "name": "ar_shoots",
-      "type": "standard",
-      "value": "ar_shoots",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "ar_shoots_night",
-      "name": "ar_shoots_night",
-      "type": "standard",
-      "value": "ar_shoots_night",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "cs_alpine",
-      "name": "cs_alpine",
-      "type": "standard",
-      "value": "cs_alpine",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "cs_italy",
-      "name": "cs_italy",
-      "type": "standard",
-      "value": "cs_italy",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "cs_italy_vanity",
-      "name": "cs_italy_vanity",
-      "type": "standard",
-      "value": "cs_italy_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "cs_office",
-      "name": "cs_office",
-      "type": "standard",
-      "value": "cs_office",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "cs_office_vanity",
-      "name": "cs_office_vanity",
-      "type": "standard",
-      "value": "cs_office_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_ancient",
-      "name": "de_ancient",
-      "type": "standard",
-      "value": "de_ancient",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_ancient_night",
-      "name": "de_ancient_night",
-      "type": "standard",
-      "value": "de_ancient_night",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_ancient_night_vanity",
-      "name": "de_ancient_night_vanity",
-      "type": "standard",
-      "value": "de_ancient_night_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_ancient_vanity",
-      "name": "de_ancient_vanity",
-      "type": "standard",
-      "value": "de_ancient_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_anubis",
-      "name": "de_anubis",
-      "type": "standard",
-      "value": "de_anubis",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_anubis_vanity",
-      "name": "de_anubis_vanity",
-      "type": "standard",
-      "value": "de_anubis_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_cache",
-      "name": "de_cache",
-      "type": "standard",
-      "value": "de_cache",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_cache_vanity",
-      "name": "de_cache_vanity",
-      "type": "standard",
-      "value": "de_cache_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_dust2",
-      "name": "de_dust2",
-      "type": "standard",
-      "value": "de_dust2",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_dust2_vanity",
-      "name": "de_dust2_vanity",
-      "type": "standard",
-      "value": "de_dust2_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_inferno",
-      "name": "de_inferno",
-      "type": "standard",
-      "value": "de_inferno",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_inferno_vanity",
-      "name": "de_inferno_vanity",
-      "type": "standard",
-      "value": "de_inferno_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_mirage",
-      "name": "de_mirage",
-      "type": "standard",
-      "value": "de_mirage",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_mirage_vanity",
-      "name": "de_mirage_vanity",
-      "type": "standard",
-      "value": "de_mirage_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_nuke",
-      "name": "de_nuke",
-      "type": "standard",
-      "value": "de_nuke",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_nuke_vanity",
-      "name": "de_nuke_vanity",
-      "type": "standard",
-      "value": "de_nuke_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_overpass",
-      "name": "de_overpass",
-      "type": "standard",
-      "value": "de_overpass",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_overpass_vanity",
-      "name": "de_overpass_vanity",
-      "type": "standard",
-      "value": "de_overpass_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_poseidon",
-      "name": "de_poseidon",
-      "type": "standard",
-      "value": "de_poseidon",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_sanctum",
-      "name": "de_sanctum",
-      "type": "standard",
-      "value": "de_sanctum",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_stronghold",
-      "name": "de_stronghold",
-      "type": "standard",
-      "value": "de_stronghold",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_train",
-      "name": "de_train",
-      "type": "standard",
-      "value": "de_train",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_train_vanity",
-      "name": "de_train_vanity",
-      "type": "standard",
-      "value": "de_train_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_vertigo",
-      "name": "de_vertigo",
-      "type": "standard",
-      "value": "de_vertigo",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_vertigo_vanity",
-      "name": "de_vertigo_vanity",
-      "type": "standard",
-      "value": "de_vertigo_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "de_warden",
-      "name": "de_warden",
-      "type": "standard",
-      "value": "de_warden",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "graphics_settings",
-      "name": "graphics_settings",
-      "type": "standard",
-      "value": "graphics_settings",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "lobby_mapveto",
-      "name": "lobby_mapveto",
-      "type": "standard",
-      "value": "lobby_mapveto",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "warehouse_vanity",
-      "name": "warehouse_vanity",
-      "type": "standard",
-      "value": "warehouse_vanity",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "workshop_preview_ancient",
-      "name": "workshop_preview_ancient",
-      "type": "standard",
-      "value": "workshop_preview_ancient",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "workshop_preview_dust2",
-      "name": "workshop_preview_dust2",
-      "type": "standard",
-      "value": "workshop_preview_dust2",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "workshop_preview_inferno",
-      "name": "workshop_preview_inferno",
-      "type": "standard",
-      "value": "workshop_preview_inferno",
-      "origin": "BUILTIN",
-      "validForMapCycle": true,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3293451334",
-      "name": "[CS2] cs_militia from CS:Source",
-      "type": "workshop",
-      "value": "3293451334",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3079043089",
-      "name": "Abstract",
-      "type": "workshop",
-      "value": "3079043089",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3339983232",
-      "name": "Agency",
-      "type": "workshop",
-      "value": "3339983232",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3119181123",
-      "name": "Aim Anubis",
-      "type": "workshop",
-      "value": "3119181123",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3108513658",
-      "name": "Akiba",
-      "type": "workshop",
-      "value": "3108513658",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3071005299",
-      "name": "Assembly",
-      "type": "workshop",
-      "value": "3071005299",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3079692971",
-      "name": "Aztec",
-      "type": "workshop",
-      "value": "3079692971",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3329258290",
-      "name": "Basalt",
-      "type": "workshop",
-      "value": "3329258290",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3075706807",
-      "name": "Biome",
-      "type": "workshop",
-      "value": "3075706807",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3284441858",
-      "name": "Blagai (CS2) (unofficial port)",
-      "type": "workshop",
-      "value": "3284441858",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
       "id": "workshop:3286679033",
       "name": "Boyard",
       "type": "workshop",
       "value": "3286679033",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3149170605",
-      "name": "Breach 3.0",
-      "type": "workshop",
-      "value": "3149170605",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3070290240",
@@ -493,187 +17,8 @@
       "value": "3070290240",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3663976049",
-      "name": "Brownstone",
-      "type": "workshop",
-      "value": "3663976049",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3085200029",
-      "name": "Bunker",
-      "type": "workshop",
-      "value": "3085200029",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3437809122",
-      "name": "Cache",
-      "type": "workshop",
-      "value": "3437809122",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070596702",
-      "name": "Cache (de_cache)",
-      "type": "workshop",
-      "value": "3070596702",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3358889105",
-      "name": "Cavern",
-      "type": "workshop",
-      "value": "3358889105",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3072618385",
-      "name": "Chinatown (CS2) (unofficial port)",
-      "type": "workshop",
-      "value": "3072618385",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070212801",
-      "name": "Cobblestone 2015",
-      "type": "workshop",
-      "value": "3070212801",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3079872050",
-      "name": "CS2 Assault",
-      "type": "workshop",
-      "value": "3079872050",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3141587451",
-      "name": "cs_lagos",
-      "type": "workshop",
-      "value": "3141587451",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3095875614",
-      "name": "cs_minecraft_landscape",
-      "type": "workshop",
-      "value": "3095875614",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3071179917",
-      "name": "cs_rio (Rio de Janeiro)",
-      "type": "workshop",
-      "value": "3071179917",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3114174859",
-      "name": "De_All_Maps_in_One (from NadeKing's video)",
-      "type": "workshop",
-      "value": "3114174859",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3625314593",
-      "name": "de_alley",
-      "type": "workshop",
-      "value": "3625314593",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3356470127",
-      "name": "de_Borgholm",
-      "type": "workshop",
-      "value": "3356470127",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3100864853",
-      "name": "de_Codewise (cs2)",
-      "type": "workshop",
-      "value": "3100864853",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3625259817",
-      "name": "de_highschool",
-      "type": "workshop",
-      "value": "3625259817",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3591745206",
-      "name": "de_icewerk",
-      "type": "workshop",
-      "value": "3591745206",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3609075990",
-      "name": "de_mirage_christmas",
-      "type": "workshop",
-      "value": "3609075990",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3094682957",
-      "name": "de_museum",
-      "type": "workshop",
-      "value": "3094682957",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3072959547",
-      "name": "de_rats_1337",
-      "type": "workshop",
-      "value": "3072959547",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3173958815",
@@ -682,70 +27,8 @@
       "value": "3173958815",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070284539",
-      "name": "de_train",
-      "type": "workshop",
-      "value": "3070284539",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3108198185",
-      "name": "de_westwood",
-      "type": "workshop",
-      "value": "3108198185",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3539217452",
-      "name": "Debris",
-      "type": "workshop",
-      "value": "3539217452",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3262583587",
-      "name": "Delivery (Wingman)",
-      "type": "workshop",
-      "value": "3262583587",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3414036782",
-      "name": "Dogtown",
-      "type": "workshop",
-      "value": "3414036782",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3085411670",
-      "name": "Dorf",
-      "type": "workshop",
-      "value": "3085411670",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070192462",
-      "name": "Drawbridge",
-      "type": "workshop",
-      "value": "3070192462",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3127729110",
@@ -754,151 +37,8 @@
       "value": "3127729110",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3117367319",
-      "name": "Dust 2 (Mirror)",
-      "type": "workshop",
-      "value": "3117367319",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3604274734",
-      "name": "Dust 2 Christmas (Зимний DUST2)",
-      "type": "workshop",
-      "value": "3604274734",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3073150255",
-      "name": "Dust 2 Night GyLala",
-      "type": "workshop",
-      "value": "3073150255",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3531149465",
-      "name": "Echolab",
-      "type": "workshop",
-      "value": "3531149465",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3328169568",
-      "name": "Edin",
-      "type": "workshop",
-      "value": "3328169568",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3408790618",
-      "name": "El Dorado",
-      "type": "workshop",
-      "value": "3408790618",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3369669148",
-      "name": "Express - Wingman",
-      "type": "workshop",
-      "value": "3369669148",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3442040035",
-      "name": "Fachwerk",
-      "type": "workshop",
-      "value": "3442040035",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3071942576",
-      "name": "Ferry [WIP]",
-      "type": "workshop",
-      "value": "3071942576",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3423073369",
-      "name": "Flick",
-      "type": "workshop",
-      "value": "3423073369",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3165447119",
-      "name": "Flow - wingman_flow - Official map",
-      "type": "workshop",
-      "value": "3165447119",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3132854332",
-      "name": "Foroglio",
-      "type": "workshop",
-      "value": "3132854332",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3579891746",
-      "name": "Ganny",
-      "type": "workshop",
-      "value": "3579891746",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3336683348",
-      "name": "Hive",
-      "type": "workshop",
-      "value": "3336683348",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3110463075",
-      "name": "Inferno (Mirror)",
-      "type": "workshop",
-      "value": "3110463075",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3116932017",
-      "name": "Iris",
-      "type": "workshop",
-      "value": "3116932017",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3332005394",
@@ -907,25 +47,8 @@
       "value": "3332005394",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070194623",
-      "name": "kz_checkmate",
-      "type": "workshop",
-      "value": "3070194623",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3121168339",
-      "name": "kz_grotto",
-      "type": "workshop",
-      "value": "3121168339",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3285242027",
@@ -934,124 +57,8 @@
       "value": "3285242027",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3219506727",
-      "name": "Lake",
-      "type": "workshop",
-      "value": "3219506727",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3376496698",
-      "name": "Lake Christmas",
-      "type": "workshop",
-      "value": "3376496698",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3354923062",
-      "name": "Manor",
-      "type": "workshop",
-      "value": "3354923062",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3165559377",
-      "name": "Memento (Wingman)",
-      "type": "workshop",
-      "value": "3165559377",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3152430710",
-      "name": "Mills",
-      "type": "workshop",
-      "value": "3152430710",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3121442300",
-      "name": "Minecraft Village CS2",
-      "type": "workshop",
-      "value": "3121442300",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3112468244",
-      "name": "Mirage (Mirror)",
-      "type": "workshop",
-      "value": "3112468244",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3084661017",
-      "name": "Mission",
-      "type": "workshop",
-      "value": "3084661017",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070280193",
-      "name": "Monarch",
-      "type": "workshop",
-      "value": "3070280193",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070766070",
-      "name": "Mutiny",
-      "type": "workshop",
-      "value": "3070766070",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3430103877",
-      "name": "Neptune",
-      "type": "workshop",
-      "value": "3430103877",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3674217330",
-      "name": "Northern",
-      "type": "workshop",
-      "value": "3674217330",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3346403247",
-      "name": "Office Tower",
-      "type": "workshop",
-      "value": "3346403247",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3088473555",
@@ -1060,70 +67,8 @@
       "value": "3088473555",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3257582863",
-      "name": "Palais",
-      "type": "workshop",
-      "value": "3257582863",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3435397830",
-      "name": "Petroleum",
-      "type": "workshop",
-      "value": "3435397830",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070543311",
-      "name": "Piranesi",
-      "type": "workshop",
-      "value": "3070543311",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3522144043",
-      "name": "Poseidon",
-      "type": "workshop",
-      "value": "3522144043",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3265650949",
-      "name": "Rainfall",
-      "type": "workshop",
-      "value": "3265650949",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3121051997",
-      "name": "Ravine CS2",
-      "type": "workshop",
-      "value": "3121051997",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3131775712",
-      "name": "Redline",
-      "type": "workshop",
-      "value": "3131775712",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3085490518",
@@ -1132,25 +77,8 @@
       "value": "3085490518",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3536622725",
-      "name": "Rooftop",
-      "type": "workshop",
-      "value": "3536622725",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3070550406",
-      "name": "Safehouse (de_safehouse)",
-      "type": "workshop",
-      "value": "3070550406",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3082340867",
@@ -1159,25 +87,8 @@
       "value": "3082340867",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3643331442",
-      "name": "Sanctum",
-      "type": "workshop",
-      "value": "3643331442",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3139403447",
-      "name": "sandstone remake",
-      "type": "workshop",
-      "value": "3139403447",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3070612859",
@@ -1186,7 +97,8 @@
       "value": "3070612859",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3439120481",
@@ -1195,70 +107,8 @@
       "value": "3439120481",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3076153623",
-      "name": "surf_kitsune",
-      "type": "workshop",
-      "value": "3076153623",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3121217565",
-      "name": "Thera",
-      "type": "workshop",
-      "value": "3121217565",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3315995254",
-      "name": "Tile",
-      "type": "workshop",
-      "value": "3315995254",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3443076678",
-      "name": "Transit WIP (Visual)",
-      "type": "workshop",
-      "value": "3443076678",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3428771893",
-      "name": "Trash",
-      "type": "workshop",
-      "value": "3428771893",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3267671493",
-      "name": "Tuscan (CS2) (unofficial port)",
-      "type": "workshop",
-      "value": "3267671493",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
-    },
-    {
-      "id": "workshop:3071899764",
-      "name": "Vandal",
-      "type": "workshop",
-      "value": "3071899764",
-      "origin": "WORKSHOP",
-      "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
     },
     {
       "id": "workshop:3070208661",
@@ -1267,7 +117,1268 @@
       "value": "3070208661",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": true
+    },
+    {
+      "id": "workshop:3293451334",
+      "name": "[CS2] cs_militia from CS:Source",
+      "type": "workshop",
+      "value": "3293451334",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3079043089",
+      "name": "Abstract",
+      "type": "workshop",
+      "value": "3079043089",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3339983232",
+      "name": "Agency",
+      "type": "workshop",
+      "value": "3339983232",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3119181123",
+      "name": "Aim Anubis",
+      "type": "workshop",
+      "value": "3119181123",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3108513658",
+      "name": "Akiba",
+      "type": "workshop",
+      "value": "3108513658",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "ar_baggage",
+      "name": "ar_baggage",
+      "type": "standard",
+      "value": "ar_baggage",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "ar_baggage_vanity",
+      "name": "ar_baggage_vanity",
+      "type": "standard",
+      "value": "ar_baggage_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "ar_pool_day",
+      "name": "ar_pool_day",
+      "type": "standard",
+      "value": "ar_pool_day",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "ar_shoots",
+      "name": "ar_shoots",
+      "type": "standard",
+      "value": "ar_shoots",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "ar_shoots_night",
+      "name": "ar_shoots_night",
+      "type": "standard",
+      "value": "ar_shoots_night",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3071005299",
+      "name": "Assembly",
+      "type": "workshop",
+      "value": "3071005299",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3079692971",
+      "name": "Aztec",
+      "type": "workshop",
+      "value": "3079692971",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3329258290",
+      "name": "Basalt",
+      "type": "workshop",
+      "value": "3329258290",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3075706807",
+      "name": "Biome",
+      "type": "workshop",
+      "value": "3075706807",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3284441858",
+      "name": "Blagai (CS2) (unofficial port)",
+      "type": "workshop",
+      "value": "3284441858",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3149170605",
+      "name": "Breach 3.0",
+      "type": "workshop",
+      "value": "3149170605",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3663976049",
+      "name": "Brownstone",
+      "type": "workshop",
+      "value": "3663976049",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3085200029",
+      "name": "Bunker",
+      "type": "workshop",
+      "value": "3085200029",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3437809122",
+      "name": "Cache",
+      "type": "workshop",
+      "value": "3437809122",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070596702",
+      "name": "Cache (de_cache)",
+      "type": "workshop",
+      "value": "3070596702",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3358889105",
+      "name": "Cavern",
+      "type": "workshop",
+      "value": "3358889105",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3072618385",
+      "name": "Chinatown (CS2) (unofficial port)",
+      "type": "workshop",
+      "value": "3072618385",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070212801",
+      "name": "Cobblestone 2015",
+      "type": "workshop",
+      "value": "3070212801",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "cs_alpine",
+      "name": "cs_alpine",
+      "type": "standard",
+      "value": "cs_alpine",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "cs_italy",
+      "name": "cs_italy",
+      "type": "standard",
+      "value": "cs_italy",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "cs_italy_vanity",
+      "name": "cs_italy_vanity",
+      "type": "standard",
+      "value": "cs_italy_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3141587451",
+      "name": "cs_lagos",
+      "type": "workshop",
+      "value": "3141587451",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3095875614",
+      "name": "cs_minecraft_landscape",
+      "type": "workshop",
+      "value": "3095875614",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "cs_office",
+      "name": "cs_office",
+      "type": "standard",
+      "value": "cs_office",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "cs_office_vanity",
+      "name": "cs_office_vanity",
+      "type": "standard",
+      "value": "cs_office_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3071179917",
+      "name": "cs_rio (Rio de Janeiro)",
+      "type": "workshop",
+      "value": "3071179917",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3079872050",
+      "name": "CS2 Assault",
+      "type": "workshop",
+      "value": "3079872050",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3114174859",
+      "name": "De_All_Maps_in_One (from NadeKing's video)",
+      "type": "workshop",
+      "value": "3114174859",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3625314593",
+      "name": "de_alley",
+      "type": "workshop",
+      "value": "3625314593",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_ancient",
+      "name": "de_ancient",
+      "type": "standard",
+      "value": "de_ancient",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_ancient_night",
+      "name": "de_ancient_night",
+      "type": "standard",
+      "value": "de_ancient_night",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_ancient_night_vanity",
+      "name": "de_ancient_night_vanity",
+      "type": "standard",
+      "value": "de_ancient_night_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_ancient_vanity",
+      "name": "de_ancient_vanity",
+      "type": "standard",
+      "value": "de_ancient_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_anubis",
+      "name": "de_anubis",
+      "type": "standard",
+      "value": "de_anubis",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_anubis_vanity",
+      "name": "de_anubis_vanity",
+      "type": "standard",
+      "value": "de_anubis_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3356470127",
+      "name": "de_Borgholm",
+      "type": "workshop",
+      "value": "3356470127",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_cache",
+      "name": "de_cache",
+      "type": "standard",
+      "value": "de_cache",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_cache_vanity",
+      "name": "de_cache_vanity",
+      "type": "standard",
+      "value": "de_cache_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3100864853",
+      "name": "de_Codewise (cs2)",
+      "type": "workshop",
+      "value": "3100864853",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_dust2",
+      "name": "de_dust2",
+      "type": "standard",
+      "value": "de_dust2",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_dust2_vanity",
+      "name": "de_dust2_vanity",
+      "type": "standard",
+      "value": "de_dust2_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3625259817",
+      "name": "de_highschool",
+      "type": "workshop",
+      "value": "3625259817",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3591745206",
+      "name": "de_icewerk",
+      "type": "workshop",
+      "value": "3591745206",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_inferno",
+      "name": "de_inferno",
+      "type": "standard",
+      "value": "de_inferno",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_inferno_vanity",
+      "name": "de_inferno_vanity",
+      "type": "standard",
+      "value": "de_inferno_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_mirage",
+      "name": "de_mirage",
+      "type": "standard",
+      "value": "de_mirage",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3609075990",
+      "name": "de_mirage_christmas",
+      "type": "workshop",
+      "value": "3609075990",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_mirage_vanity",
+      "name": "de_mirage_vanity",
+      "type": "standard",
+      "value": "de_mirage_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3094682957",
+      "name": "de_museum",
+      "type": "workshop",
+      "value": "3094682957",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_nuke",
+      "name": "de_nuke",
+      "type": "standard",
+      "value": "de_nuke",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_nuke_vanity",
+      "name": "de_nuke_vanity",
+      "type": "standard",
+      "value": "de_nuke_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_overpass",
+      "name": "de_overpass",
+      "type": "standard",
+      "value": "de_overpass",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_overpass_vanity",
+      "name": "de_overpass_vanity",
+      "type": "standard",
+      "value": "de_overpass_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_poseidon",
+      "name": "de_poseidon",
+      "type": "standard",
+      "value": "de_poseidon",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3072959547",
+      "name": "de_rats_1337",
+      "type": "workshop",
+      "value": "3072959547",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_sanctum",
+      "name": "de_sanctum",
+      "type": "standard",
+      "value": "de_sanctum",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_stronghold",
+      "name": "de_stronghold",
+      "type": "standard",
+      "value": "de_stronghold",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_train",
+      "name": "de_train",
+      "type": "standard",
+      "value": "de_train",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070284539",
+      "name": "de_train",
+      "type": "workshop",
+      "value": "3070284539",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_train_vanity",
+      "name": "de_train_vanity",
+      "type": "standard",
+      "value": "de_train_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_vertigo",
+      "name": "de_vertigo",
+      "type": "standard",
+      "value": "de_vertigo",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_vertigo_vanity",
+      "name": "de_vertigo_vanity",
+      "type": "standard",
+      "value": "de_vertigo_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "de_warden",
+      "name": "de_warden",
+      "type": "standard",
+      "value": "de_warden",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3108198185",
+      "name": "de_westwood",
+      "type": "workshop",
+      "value": "3108198185",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3539217452",
+      "name": "Debris",
+      "type": "workshop",
+      "value": "3539217452",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3262583587",
+      "name": "Delivery (Wingman)",
+      "type": "workshop",
+      "value": "3262583587",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3414036782",
+      "name": "Dogtown",
+      "type": "workshop",
+      "value": "3414036782",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3085411670",
+      "name": "Dorf",
+      "type": "workshop",
+      "value": "3085411670",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070192462",
+      "name": "Drawbridge",
+      "type": "workshop",
+      "value": "3070192462",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3117367319",
+      "name": "Dust 2 (Mirror)",
+      "type": "workshop",
+      "value": "3117367319",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3604274734",
+      "name": "Dust 2 Christmas (Зимний DUST2)",
+      "type": "workshop",
+      "value": "3604274734",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3073150255",
+      "name": "Dust 2 Night GyLala",
+      "type": "workshop",
+      "value": "3073150255",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3531149465",
+      "name": "Echolab",
+      "type": "workshop",
+      "value": "3531149465",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3328169568",
+      "name": "Edin",
+      "type": "workshop",
+      "value": "3328169568",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3408790618",
+      "name": "El Dorado",
+      "type": "workshop",
+      "value": "3408790618",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3369669148",
+      "name": "Express - Wingman",
+      "type": "workshop",
+      "value": "3369669148",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3442040035",
+      "name": "Fachwerk",
+      "type": "workshop",
+      "value": "3442040035",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3071942576",
+      "name": "Ferry [WIP]",
+      "type": "workshop",
+      "value": "3071942576",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3423073369",
+      "name": "Flick",
+      "type": "workshop",
+      "value": "3423073369",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3165447119",
+      "name": "Flow - wingman_flow - Official map",
+      "type": "workshop",
+      "value": "3165447119",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3132854332",
+      "name": "Foroglio",
+      "type": "workshop",
+      "value": "3132854332",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3579891746",
+      "name": "Ganny",
+      "type": "workshop",
+      "value": "3579891746",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "graphics_settings",
+      "name": "graphics_settings",
+      "type": "standard",
+      "value": "graphics_settings",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3336683348",
+      "name": "Hive",
+      "type": "workshop",
+      "value": "3336683348",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3110463075",
+      "name": "Inferno (Mirror)",
+      "type": "workshop",
+      "value": "3110463075",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3116932017",
+      "name": "Iris",
+      "type": "workshop",
+      "value": "3116932017",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070194623",
+      "name": "kz_checkmate",
+      "type": "workshop",
+      "value": "3070194623",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3121168339",
+      "name": "kz_grotto",
+      "type": "workshop",
+      "value": "3121168339",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3219506727",
+      "name": "Lake",
+      "type": "workshop",
+      "value": "3219506727",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3376496698",
+      "name": "Lake Christmas",
+      "type": "workshop",
+      "value": "3376496698",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "lobby_mapveto",
+      "name": "lobby_mapveto",
+      "type": "standard",
+      "value": "lobby_mapveto",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3354923062",
+      "name": "Manor",
+      "type": "workshop",
+      "value": "3354923062",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3165559377",
+      "name": "Memento (Wingman)",
+      "type": "workshop",
+      "value": "3165559377",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3152430710",
+      "name": "Mills",
+      "type": "workshop",
+      "value": "3152430710",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3121442300",
+      "name": "Minecraft Village CS2",
+      "type": "workshop",
+      "value": "3121442300",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3112468244",
+      "name": "Mirage (Mirror)",
+      "type": "workshop",
+      "value": "3112468244",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3084661017",
+      "name": "Mission",
+      "type": "workshop",
+      "value": "3084661017",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070280193",
+      "name": "Monarch",
+      "type": "workshop",
+      "value": "3070280193",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070766070",
+      "name": "Mutiny",
+      "type": "workshop",
+      "value": "3070766070",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3430103877",
+      "name": "Neptune",
+      "type": "workshop",
+      "value": "3430103877",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3674217330",
+      "name": "Northern",
+      "type": "workshop",
+      "value": "3674217330",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3346403247",
+      "name": "Office Tower",
+      "type": "workshop",
+      "value": "3346403247",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3257582863",
+      "name": "Palais",
+      "type": "workshop",
+      "value": "3257582863",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3435397830",
+      "name": "Petroleum",
+      "type": "workshop",
+      "value": "3435397830",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070543311",
+      "name": "Piranesi",
+      "type": "workshop",
+      "value": "3070543311",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3522144043",
+      "name": "Poseidon",
+      "type": "workshop",
+      "value": "3522144043",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3265650949",
+      "name": "Rainfall",
+      "type": "workshop",
+      "value": "3265650949",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3121051997",
+      "name": "Ravine CS2",
+      "type": "workshop",
+      "value": "3121051997",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3131775712",
+      "name": "Redline",
+      "type": "workshop",
+      "value": "3131775712",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3536622725",
+      "name": "Rooftop",
+      "type": "workshop",
+      "value": "3536622725",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3070550406",
+      "name": "Safehouse (de_safehouse)",
+      "type": "workshop",
+      "value": "3070550406",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3643331442",
+      "name": "Sanctum",
+      "type": "workshop",
+      "value": "3643331442",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3139403447",
+      "name": "sandstone remake",
+      "type": "workshop",
+      "value": "3139403447",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3076153623",
+      "name": "surf_kitsune",
+      "type": "workshop",
+      "value": "3076153623",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3121217565",
+      "name": "Thera",
+      "type": "workshop",
+      "value": "3121217565",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3315995254",
+      "name": "Tile",
+      "type": "workshop",
+      "value": "3315995254",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3443076678",
+      "name": "Transit WIP (Visual)",
+      "type": "workshop",
+      "value": "3443076678",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3428771893",
+      "name": "Trash",
+      "type": "workshop",
+      "value": "3428771893",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3267671493",
+      "name": "Tuscan (CS2) (unofficial port)",
+      "type": "workshop",
+      "value": "3267671493",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop:3071899764",
+      "name": "Vandal",
+      "type": "workshop",
+      "value": "3071899764",
+      "origin": "WORKSHOP",
+      "validForMapCycle": false,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "warehouse_vanity",
+      "name": "warehouse_vanity",
+      "type": "standard",
+      "value": "warehouse_vanity",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
     },
     {
       "id": "workshop:3308613773",
@@ -1276,7 +1387,8 @@
       "value": "3308613773",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": false
     },
     {
       "id": "workshop:3114023815",
@@ -1285,7 +1397,38 @@
       "value": "3114023815",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop_preview_ancient",
+      "name": "workshop_preview_ancient",
+      "type": "standard",
+      "value": "workshop_preview_ancient",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop_preview_dust2",
+      "name": "workshop_preview_dust2",
+      "type": "standard",
+      "value": "workshop_preview_dust2",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
+    },
+    {
+      "id": "workshop_preview_inferno",
+      "name": "workshop_preview_inferno",
+      "type": "standard",
+      "value": "workshop_preview_inferno",
+      "origin": "BUILTIN",
+      "validForMapCycle": true,
+      "unavailable": false,
+      "favorite": false
     },
     {
       "id": "workshop:3433040330",
@@ -1294,7 +1437,8 @@
       "value": "3433040330",
       "origin": "WORKSHOP",
       "validForMapCycle": false,
-      "unavailable": false
+      "unavailable": false,
+      "favorite": false
     }
   ],
   "selectableMaps": [
@@ -1306,7 +1450,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3071005299",
@@ -1316,7 +1461,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3284441858",
@@ -1326,7 +1472,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3286679033",
@@ -1336,7 +1483,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3070290240",
@@ -1346,7 +1494,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3358889105",
@@ -1356,7 +1505,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3625314593",
@@ -1366,7 +1516,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3173958815",
@@ -1376,7 +1527,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3085411670",
@@ -1386,7 +1538,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3070192462",
@@ -1396,7 +1549,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3132854332",
@@ -1406,7 +1560,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3332005394",
@@ -1416,7 +1571,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3285242027",
@@ -1426,7 +1582,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3219506727",
@@ -1436,7 +1593,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3165559377",
@@ -1446,7 +1604,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3070280193",
@@ -1456,7 +1615,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3346403247",
@@ -1466,7 +1626,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3088473555",
@@ -1476,7 +1637,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3257582863",
@@ -1486,7 +1648,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3265650949",
@@ -1496,7 +1659,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3121051997",
@@ -1506,7 +1670,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3085490518",
@@ -1516,7 +1681,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3536622725",
@@ -1526,7 +1692,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3070550406",
@@ -1536,7 +1703,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3082340867",
@@ -1546,7 +1714,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3070612859",
@@ -1556,7 +1725,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3439120481",
@@ -1566,7 +1736,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3443076678",
@@ -1576,7 +1747,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3070208661",
@@ -1586,7 +1758,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3308613773",
@@ -1596,7 +1769,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3339983232",
@@ -1606,7 +1780,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3329258290",
@@ -1616,7 +1791,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3663976049",
@@ -1626,7 +1802,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3437809122",
@@ -1636,7 +1813,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3127729110",
@@ -1646,7 +1824,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": true
     },
     {
       "id": "workshop:3408790618",
@@ -1656,7 +1835,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3674217330",
@@ -1666,7 +1846,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3522144043",
@@ -1676,7 +1857,8 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     },
     {
       "id": "workshop:3643331442",
@@ -1686,18 +1868,26 @@
       "origin": "WORKSHOP",
       "validForMapCycle": false,
       "unavailable": false,
-      "source": "inventory"
+      "source": "inventory",
+      "favorite": false
     }
   ],
   "tonightMapCycle": [
-    "Splat",
     "Shortdust (de_shortdust)",
-    "Sakura",
-    "Rooftop",
-    "Transit WIP (Visual)"
+    "Monarch",
+    "Ravine CS2",
+    "Sanctum",
+    "Dorf",
+    "Brewery"
   ],
   "tonightMapProgress": {
-    "playedMaps": [],
-    "currentMap": ""
+    "playedMaps": [
+      "Shortdust (de_shortdust)",
+      "Monarch",
+      "Ravine CS2",
+      "Sanctum",
+      "Dorf"
+    ],
+    "currentMap": "Brewery"
   }
 }

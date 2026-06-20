@@ -141,6 +141,15 @@
               <input id="csApiMessageInput" type="text" placeholder="Enter announcement text" />
               <button id="csApiSendMessageBtn" class="readiness-verified-api" title="Verified CS API action">Send</button>
             </div>
+            <div class="preset-announcements" aria-label="Preset announcements">
+              <span>Preset</span>
+              <button
+                class="secondary compact-preset readiness-verified-api"
+                data-message="It's noob time"
+                onclick="sendPresetAnnouncement(this)"
+                title="Send preset announcement through the CS API"
+              >Noob Time</button>
+            </div>
           </div>
 
           <div class="control-row sudden-death-settings">
