@@ -9,7 +9,7 @@
  * @property {string|null} workshopId
  * @property {boolean} validForMapCycle
  *
- * @typedef {'CHANGE_MAP'|'RESTART_MATCH'} CsServerCommandType
+ * @typedef {'CHANGE_MAP'|'RESTART_MATCH'|'TOGGLE_PAUSE'} CsServerCommandType
  *
  * @typedef {Object} CsServerCommandRequest
  * @property {CsServerCommandType} type

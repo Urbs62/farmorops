@@ -49,6 +49,7 @@ if (USE_LOCAL_RCON) {
 
 // DRY_RUN defaults to true if not set. Set DRY_RUN=false to enable live RCON execution.
 const DRY_RUN = (process.env.DRY_RUN || 'true').toLowerCase() === 'true';
+let inferredMatchPaused = false;
 
 function getLocalMapCommand(mapId) {
   const workshopMatch = String(mapId).match(/^workshop:(\d+)$/);
@@ -274,10 +275,12 @@ app.post('/api/cs/change-map', async (req, res) => {
   try {
     if (USE_LOCAL_RCON) {
       const result = await executeLocalCommand(getLocalMapCommand(mapId));
+      inferredMatchPaused = false;
       return res.json({ success: true, ...result });
     }
 
     const result = await csServerService.changeMap(mapId);
+    inferredMatchPaused = false;
     return res.json({ success: true, result });
   } catch (err) {
     return handleCsApiError(err, res);
@@ -288,13 +291,51 @@ app.post('/api/cs/restart-match', async (req, res) => {
   try {
     if (USE_LOCAL_RCON) {
       const result = await executeLocalCommand('mp_restartgame 1');
+      inferredMatchPaused = false;
       return res.json({ success: true, ...result });
     }
 
     const result = await csServerService.restartMatch();
+    inferredMatchPaused = false;
     return res.json({ success: true, result });
   } catch (err) {
     return handleCsApiError(err, res);
+  }
+});
+
+app.post('/api/cs/toggle-pause', async (req, res) => {
+  const endpoint = 'POST /api/cs/toggle-pause';
+  console.info(`[FarmorOps] endpoint called: ${endpoint}`);
+
+  try {
+    let result;
+
+    if (USE_LOCAL_RCON) {
+      const command = inferredMatchPaused ? 'mp_unpause_match' : 'mp_pause_match';
+      result = await executeLocalCommand(command);
+    } else {
+      result = await csServerService.togglePause();
+    }
+
+    inferredMatchPaused = !inferredMatchPaused;
+    const body = { success: true, paused: inferredMatchPaused, result };
+    console.info(`[FarmorOps] response status: 200 endpoint=${endpoint}`);
+    console.info(`[FarmorOps] response body: ${JSON.stringify(body)}`);
+    return res.json(body);
+  } catch (err) {
+    const isExpectedCsApiError = err
+      && typeof err.status === 'number'
+      && [400, 401, 403, 502, 504].includes(err.status);
+    const status = isExpectedCsApiError ? err.status : 500;
+    const body = isExpectedCsApiError
+      ? (err.responseBody || { error: err.message || 'CS API request failed.' })
+      : { error: 'Unexpected CS API error.' };
+    if (!isExpectedCsApiError) {
+      console.error('Unexpected CS API error:', err);
+    }
+    console.info(`[FarmorOps] response status: ${status} endpoint=${endpoint}`);
+    console.info(`[FarmorOps] response body: ${JSON.stringify(body)}`);
+    return res.status(status).json(body);
   }
 });
 

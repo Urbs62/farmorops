@@ -66,6 +66,7 @@ const csApiUpdateMapcycleBtn = document.getElementById('csApiUpdateMapcycleBtn')
 const csApiWarmupBtn = document.getElementById('csApiWarmupBtn');
 const csApiOrdinaryBtn = document.getElementById('csApiOrdinaryBtn');
 const csApiRestartMatchBtn = document.getElementById('csApiRestartMatchBtn') || document.getElementById('restartMatchBtn');
+const pauseToggleBtn = document.getElementById('pauseToggleBtn');
 const csApiMessageInput = document.getElementById('csApiMessageInput');
 const csApiSendMessageBtn = document.getElementById('csApiSendMessageBtn');
 const compactModeToggle = document.getElementById('compactModeToggle');
@@ -961,6 +962,8 @@ async function changeServerMap(mapIdOverride) {
     }
 
     setServerStatusMessage(`Map change requested: ${mapId}`, 'success');
+    matchPaused = false;
+    updatePauseButton();
     try {
       await updateCycleProgressForLoadedMap(mapId);
     } catch (err) {
@@ -1001,6 +1004,8 @@ async function restartMatchApi() {
       return;
     }
     setServerStatusMessage('Restart match requested.', 'success');
+    matchPaused = false;
+    updatePauseButton();
     await refreshServerStatusAfterAction({
       logMessage: 'Refreshing server status after restart match'
     });
@@ -1850,20 +1855,44 @@ function kickBots() {
 }
 
 function updatePauseButton() {
-  const button = document.getElementById('pauseToggleBtn');
-  if (!button) return;
+  if (!pauseToggleBtn) return;
 
   const label = matchPaused ? 'Resume Match' : 'Pause Match';
 
-  button.classList.toggle('paused', matchPaused);
-  button.textContent = label;
+  pauseToggleBtn.classList.toggle('paused', matchPaused);
+  pauseToggleBtn.textContent = label;
 }
 
-function togglePauseMatch() {
-  const command = matchPaused ? 'mp_unpause_match' : 'mp_pause_match';
-  addCommand(command);
-  matchPaused = !matchPaused;
-  updatePauseButton();
+async function togglePauseMatch() {
+  if (!pauseToggleBtn) return false;
+  pauseToggleBtn.disabled = true;
+
+  try {
+    const response = await fetch('/api/cs/toggle-pause', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog('Toggle pause', response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setServerStatusMessage(`Toggle pause failed: ${response.status} ${errorMessage}`, 'error');
+      return false;
+    }
+
+    matchPaused = body?.paused === true;
+    updatePauseButton();
+    setServerStatusMessage(matchPaused ? 'Match pause requested.' : 'Match resume requested.', 'success');
+    return true;
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Toggle pause', null, { error: message });
+    setServerStatusMessage(`Toggle pause error: ${message}`, 'error');
+    return false;
+  } finally {
+    pauseToggleBtn.disabled = false;
+  }
 }
 
 async function requestCommandPreview(command) {

@@ -1874,20 +1874,19 @@
   ],
   "tonightMapCycle": [
     "Shortdust (de_shortdust)",
-    "Monarch",
-    "Ravine CS2",
     "Sanctum",
+    "De_Sable (Wingman)",
+    "Splat",
     "Dorf",
-    "Brewery"
+    "Palais"
   ],
   "tonightMapProgress": {
     "playedMaps": [
       "Shortdust (de_shortdust)",
-      "Monarch",
-      "Ravine CS2",
       "Sanctum",
-      "Dorf"
+      "De_Sable (Wingman)",
+      "Splat"
     ],
-    "currentMap": "Brewery"
+    "currentMap": "Dorf"
   }
 }

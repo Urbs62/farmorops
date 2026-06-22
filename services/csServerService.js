@@ -27,6 +27,10 @@ async function restartMatch() {
   return csServerApiClient.sendServerCommand('RESTART_MATCH');
 }
 
+async function togglePause() {
+  return csServerApiClient.sendServerCommand('TOGGLE_PAUSE');
+}
+
 async function getServerStatus() {
   return csServerApiClient.getServerStatus();
 }
@@ -60,6 +64,7 @@ module.exports = {
   getAllMaps,
   changeMap,
   restartMatch,
+  togglePause,
   getServerStatus,
   sendServerMessage,
   getMapCycle,
