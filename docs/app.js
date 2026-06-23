@@ -16,18 +16,18 @@ const LEGACY_MAP_STORAGE_KEYS = {
 
 const ANNOUNCEMENT_SEPARATOR = '====================';
 const MATCH_PAUSE_ANNOUNCEMENTS = Object.freeze({
-  paused: [
+  paused: Object.freeze([
     '================================',
     'MATCH PAUSED',
     'TIME FOR A COMMERCIAL BREAK',
     '================================'
-  ].join('\n'),
-  resumed: [
+  ]),
+  resumed: Object.freeze([
     '================================',
     'MATCH RESUMED',
     'GOOD LUCK HAVE FUN',
     '================================'
-  ].join('\n')
+  ])
 });
 const SERVER_STATUS_REFRESH_INITIAL_DELAY_MS = 1500;
 const SERVER_STATUS_REFRESH_RETRY_DELAY_MS = 2000;
@@ -1111,6 +1111,21 @@ async function sendFormattedServerMessage(message) {
   return true;
 }
 
+async function sendMatchPauseAnnouncement(state) {
+  const lines = MATCH_PAUSE_ANNOUNCEMENTS[state];
+  const action = state === 'paused' ? 'Pause announcement' : 'Resume announcement';
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const sent = await sendServerMessage(lines[index], {
+      logLabel: `${action} (${index + 1}/${lines.length})`,
+      updateStatus: false
+    });
+    if (!sent) return false;
+  }
+
+  return true;
+}
+
 async function sendPresetAnnouncement(button) {
   const message = button?.dataset.message || '';
   if (button) button.disabled = true;
@@ -1911,11 +1926,7 @@ async function togglePauseMatch() {
     updatePauseButton();
     setServerStatusMessage(matchPaused ? 'Match pause requested.' : 'Match resume requested.', 'success');
 
-    const announcementAction = matchPaused ? 'Pause announcement' : 'Resume announcement';
-    await sendServerMessage(MATCH_PAUSE_ANNOUNCEMENTS[matchPaused ? 'paused' : 'resumed'], {
-      logLabel: announcementAction,
-      updateStatus: false
-    });
+    await sendMatchPauseAnnouncement(matchPaused ? 'paused' : 'resumed');
     return true;
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
