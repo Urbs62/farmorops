@@ -15,6 +15,20 @@ const LEGACY_MAP_STORAGE_KEYS = {
 };
 
 const ANNOUNCEMENT_SEPARATOR = '====================';
+const MATCH_PAUSE_ANNOUNCEMENTS = Object.freeze({
+  paused: [
+    '================================',
+    'MATCH PAUSED',
+    'TIME FOR A COMMERCIAL BREAK',
+    '================================'
+  ].join('\n'),
+  resumed: [
+    '================================',
+    'MATCH RESUMED',
+    'GOOD LUCK HAVE FUN',
+    '================================'
+  ].join('\n')
+});
 const SERVER_STATUS_REFRESH_INITIAL_DELAY_MS = 1500;
 const SERVER_STATUS_REFRESH_RETRY_DELAY_MS = 2000;
 const SERVER_STATUS_REFRESH_MAX_RETRIES = 2;
@@ -1020,13 +1034,19 @@ async function restartMatchApi() {
   }
 }
 
-async function sendServerMessage(messageOverride) {
+async function sendServerMessage(messageOverride, options = {}) {
+  const {
+    logLabel = 'Send message',
+    updateStatus = true
+  } = options;
   const message = (typeof messageOverride === 'string'
     ? messageOverride.trim()
     : csApiMessageInput?.value.trim() || '');
 
   if (!message) {
-    setServerStatusMessage('Message text is required.', 'error');
+    if (updateStatus) {
+      setServerStatusMessage('Message text is required.', 'error');
+    }
     return false;
   }
 
@@ -1042,11 +1062,13 @@ async function sendServerMessage(messageOverride) {
       body: JSON.stringify({ message })
     });
     const body = await response.json().catch(() => null);
-    appendCsApiResponseLog('Send message', response, body);
+    appendCsApiResponseLog(logLabel, response, body);
 
     if (!response.ok) {
       const errorMessage = body?.message || body?.error || response.statusText;
-      setServerStatusMessage(`Send message failed: ${response.status} ${errorMessage}`, 'error');
+      if (updateStatus) {
+        setServerStatusMessage(`Send message failed: ${response.status} ${errorMessage}`, 'error');
+      }
       return false;
     }
 
@@ -1054,12 +1076,16 @@ async function sendServerMessage(messageOverride) {
       csApiMessageInput.value = '';
     }
 
-    setServerStatusMessage('Server message sent.', 'success');
+    if (updateStatus) {
+      setServerStatusMessage('Server message sent.', 'success');
+    }
     return true;
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
-    appendCsApiResponseLog('Send message', null, { error: message });
-    setServerStatusMessage(`Send message error: ${message}`, 'error');
+    appendCsApiResponseLog(logLabel, null, { error: message });
+    if (updateStatus) {
+      setServerStatusMessage(`Send message error: ${message}`, 'error');
+    }
     return false;
   } finally {
     if (csApiSendMessageBtn) {
@@ -1884,6 +1910,12 @@ async function togglePauseMatch() {
     matchPaused = body?.paused === true;
     updatePauseButton();
     setServerStatusMessage(matchPaused ? 'Match pause requested.' : 'Match resume requested.', 'success');
+
+    const announcementAction = matchPaused ? 'Pause announcement' : 'Resume announcement';
+    await sendServerMessage(MATCH_PAUSE_ANNOUNCEMENTS[matchPaused ? 'paused' : 'resumed'], {
+      logLabel: announcementAction,
+      updateStatus: false
+    });
     return true;
   } catch (err) {
     const message = err && err.message ? err.message : 'Unknown error';
