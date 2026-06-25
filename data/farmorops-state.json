@@ -1873,19 +1873,18 @@
     }
   ],
   "tonightMapCycle": [
-    "Shortdust (de_shortdust)",
+    "Boyard",
+    "Orbit",
+    "Rooftop",
     "Sanctum",
-    "De_Sable (Wingman)",
-    "Splat",
-    "Dorf",
-    "Palais"
+    "Splat"
   ],
   "tonightMapProgress": {
     "playedMaps": [
-      "Shortdust (de_shortdust)",
-      "Sanctum",
-      "De_Sable (Wingman)"
+      "Boyard",
+      "Orbit",
+      "Rooftop"
     ],
-    "currentMap": "Splat"
+    "currentMap": "Sanctum"
   }
 }

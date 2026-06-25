@@ -19,13 +19,13 @@ const MATCH_PAUSE_ANNOUNCEMENTS = Object.freeze({
   paused: Object.freeze([
     '================================',
     'MATCH PAUSED',
-    'TIME FOR A COMMERCIAL BREAK',
+    'OFFICIAL HYDRATION BREAK',
     '================================'
   ]),
   resumed: Object.freeze([
     '================================',
-    'MATCH RESUMED',
-    'GOOD LUCK HAVE FUN',
+    'HYDRATION BREAK OVER',
+    "LET'S GO!",
     '================================'
   ])
 });
