@@ -1016,6 +1016,70 @@ input[type="number"] {
   opacity: 1;
 }
 
+.input-error.success {
+  color: var(--ok);
+}
+
+.bot-control-section .button-group {
+  flex-wrap: wrap;
+}
+
+.team-handicap-control {
+  display: grid;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.team-handicap-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.team-handicap-header label {
+  color: var(--text);
+}
+
+.team-handicap-header span {
+  text-align: right;
+}
+
+.team-handicap-buttons button.active {
+  background: rgba(62, 207, 142, 0.16);
+  color: var(--ok);
+  border-color: rgba(62, 207, 142, 0.36);
+}
+
+.team-handicap-fallback[hidden] {
+  display: none;
+}
+
+.bot-control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.bot-control-grid .control-row {
+  margin-top: 0;
+}
+
+.bot-control-static {
+  align-items: end;
+  margin-top: 4px;
+}
+
+.control-row-button {
+  align-self: end;
+}
+
+.control-row-button button {
+  width: 100%;
+}
+
 .console {
   background: #080b0e;
   border: 1px solid var(--border);
@@ -1142,34 +1206,11 @@ button.sudden-death:active {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Balance bots UI */
-.bot-toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-top: 12px;
-}
-
-.balance-wrapper {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.28s ease, opacity 0.28s ease, margin-top 0.28s ease;
-  pointer-events: none;
-  margin-top: 8px;
-}
-
-.balance-wrapper.visible {
-  max-height: 220px;
-  opacity: 1;
-  pointer-events: auto;
-  margin-top: 12px;
-}
-
 @media (max-width: 900px) {
   header { align-items: flex-start; flex-direction: column; }
   main { grid-template-columns: 1fr; }
   .current-grid,
   .actions,
+  .bot-control-grid,
   .form-grid { grid-template-columns: 1fr; }
 }

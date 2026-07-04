@@ -1872,19 +1872,9 @@
       "favorite": false
     }
   ],
-  "tonightMapCycle": [
-    "Boyard",
-    "Orbit",
-    "Rooftop",
-    "Sanctum",
-    "Splat"
-  ],
+  "tonightMapCycle": [],
   "tonightMapProgress": {
-    "playedMaps": [
-      "Boyard",
-      "Orbit",
-      "Rooftop"
-    ],
-    "currentMap": "Sanctum"
+    "playedMaps": [],
+    "currentMap": ""
   }
 }

@@ -339,6 +339,128 @@ app.post('/api/cs/toggle-pause', async (req, res) => {
   }
 });
 
+function isIntegerInRange(value, min, max) {
+  return Number.isInteger(value) && value >= min && value <= max;
+}
+
+function getBotControlErrorBody(err) {
+  const status = err && typeof err.status === 'number' ? err.status : 500;
+  const body = err && err.responseBody
+    ? err.responseBody
+    : { error: err && err.message ? err.message : 'CS API request failed.' };
+
+  if (![400, 401, 403, 502, 504].includes(status)) {
+    console.error('Unexpected BOTCONTROL error:', err);
+    return {
+      status: 500,
+      body: { error: 'Unexpected CS API error.' }
+    };
+  }
+
+  return { status, body };
+}
+
+function logBotControlRoute(endpoint, payload) {
+  console.info(`[FarmorOps] endpoint called: ${endpoint}`);
+  console.info(`[FarmorOps] outbound CS API payload: ${JSON.stringify(payload)}`);
+}
+
+function logBotControlResponse(endpoint, status, body) {
+  console.info(`[FarmorOps] response status: ${status} endpoint=${endpoint}`);
+  console.info(`[FarmorOps] response body: ${JSON.stringify(body)}`);
+}
+
+app.post('/api/cs/botcontrol/static', async (req, res) => {
+  const endpoint = 'POST /api/cs/botcontrol/static';
+  const { bots } = req.body || {};
+  const payload = {
+    type: 'BOTCONTROL',
+    arguments: {
+      type: 'static',
+      bots
+    }
+  };
+  logBotControlRoute(endpoint, payload);
+
+  if (!isIntegerInRange(bots, 0, 24)) {
+    const body = { error: 'bots must be an integer between 0 and 24.' };
+    logBotControlResponse(endpoint, 400, body);
+    return res.status(400).json(body);
+  }
+
+  if (USE_LOCAL_RCON) {
+    const body = { error: 'Bot Control requires the remote CS API.' };
+    logBotControlResponse(endpoint, 501, body);
+    return res.status(501).json(body);
+  }
+
+  try {
+    const result = await csServerService.setStaticBotQuota(bots);
+    const body = { success: true, message: result?.message, result };
+    logBotControlResponse(endpoint, 200, body);
+    return res.json(body);
+  } catch (err) {
+    const { status, body } = getBotControlErrorBody(err);
+    logBotControlResponse(endpoint, status, body);
+    return res.status(status).json(body);
+  }
+});
+
+app.post('/api/cs/botcontrol/dynamic', async (req, res) => {
+  const endpoint = 'POST /api/cs/botcontrol/dynamic';
+  const { command, bots } = req.body || {};
+  const allowedCommands = new Set(['on', 'off', 'status', 'min', 'max', 'add_ct', 'add_t', 'del_ct', 'del_t']);
+  const argumentsPayload = {
+    type: 'dynamic',
+    command
+  };
+
+  if (bots !== undefined) {
+    argumentsPayload.bots = bots;
+  }
+
+  const payload = {
+    type: 'BOTCONTROL',
+    arguments: argumentsPayload
+  };
+  logBotControlRoute(endpoint, payload);
+
+  if (!allowedCommands.has(command)) {
+    const body = { error: 'command must be one of on, off, status, min, max, add_ct, add_t, del_ct, del_t.' };
+    logBotControlResponse(endpoint, 400, body);
+    return res.status(400).json(body);
+  }
+
+  if ((command === 'min' || command === 'max') && !isIntegerInRange(bots, 1, 24)) {
+    const body = { error: 'bots must be an integer between 1 and 24 for dynamic min/max.' };
+    logBotControlResponse(endpoint, 400, body);
+    return res.status(400).json(body);
+  }
+
+  if (command !== 'min' && command !== 'max' && bots !== undefined) {
+    const body = { error: 'bots is only allowed for dynamic min/max commands.' };
+    logBotControlResponse(endpoint, 400, body);
+    return res.status(400).json(body);
+  }
+
+  if (USE_LOCAL_RCON) {
+    const body = { error: 'Bot Control requires the remote CS API.' };
+    logBotControlResponse(endpoint, 501, body);
+    return res.status(501).json(body);
+  }
+
+  try {
+    const result = await csServerService.sendDynamicBotControl(command, bots);
+    const body = { success: true, message: result?.message, result };
+    logBotControlResponse(endpoint, 200, body);
+    return res.json(body);
+  } catch (err) {
+    const { status, body } = getBotControlErrorBody(err);
+    logBotControlResponse(endpoint, status, body);
+    return res.status(status).json(body);
+  }
+});
+
 app.get('/api/cs/status', async (req, res) => {
   try {
     const status = await csServerService.getServerStatus();

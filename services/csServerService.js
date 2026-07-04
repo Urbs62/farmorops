@@ -31,6 +31,26 @@ async function togglePause() {
   return csServerApiClient.sendServerCommand('TOGGLE_PAUSE');
 }
 
+async function setStaticBotQuota(bots) {
+  return csServerApiClient.sendServerCommand('BOTCONTROL', {
+    type: 'static',
+    bots
+  });
+}
+
+async function sendDynamicBotControl(command, bots) {
+  const argumentsPayload = {
+    type: 'dynamic',
+    command
+  };
+
+  if (bots !== undefined) {
+    argumentsPayload.bots = bots;
+  }
+
+  return csServerApiClient.sendServerCommand('BOTCONTROL', argumentsPayload);
+}
+
 async function getServerStatus() {
   return csServerApiClient.getServerStatus();
 }
@@ -65,6 +85,8 @@ module.exports = {
   changeMap,
   restartMatch,
   togglePause,
+  setStaticBotQuota,
+  sendDynamicBotControl,
   getServerStatus,
   sendServerMessage,
   getMapCycle,

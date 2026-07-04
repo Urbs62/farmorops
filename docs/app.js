@@ -15,6 +15,26 @@ const LEGACY_MAP_STORAGE_KEYS = {
 };
 
 const ANNOUNCEMENT_SEPARATOR = '====================';
+const TEAM_HANDICAP_ANNOUNCEMENTS = Object.freeze({
+  ct: Object.freeze([
+    '================================',
+    'TEAM HANDICAP ENABLED',
+    'CT RECEIVES +1 BOT',
+    '================================'
+  ]),
+  t: Object.freeze([
+    '================================',
+    'TEAM HANDICAP ENABLED',
+    'T RECEIVES +1 BOT',
+    '================================'
+  ]),
+  cleared: Object.freeze([
+    '================================',
+    'TEAM HANDICAP CLEARED',
+    'BACK TO EVEN TEAMS',
+    '================================'
+  ])
+});
 const MATCH_PAUSE_ANNOUNCEMENTS = Object.freeze({
   paused: Object.freeze([
     '================================',
@@ -46,6 +66,7 @@ if (!['all', 'favorites', 'standard', 'workshop'].includes(availableFilter)) {
 }
 let consoleLines = [];
 let matchPaused = false;
+let currentTeamHandicap = 'unknown';
 
 const mapList = document.getElementById('mapList');
 const inventoryList = document.getElementById('inventoryList');
@@ -81,6 +102,22 @@ const csApiWarmupBtn = document.getElementById('csApiWarmupBtn');
 const csApiOrdinaryBtn = document.getElementById('csApiOrdinaryBtn');
 const csApiRestartMatchBtn = document.getElementById('csApiRestartMatchBtn') || document.getElementById('restartMatchBtn');
 const pauseToggleBtn = document.getElementById('pauseToggleBtn');
+const botControlMinPlayersInput = document.getElementById('botControlMinPlayers');
+const botControlMaxPlayersInput = document.getElementById('botControlMaxPlayers');
+const applyDynamicBotControlBtn = document.getElementById('applyDynamicBotControlBtn');
+const enableDynamicBotControlBtn = document.getElementById('enableDynamicBotControlBtn');
+const disableDynamicBotControlBtn = document.getElementById('disableDynamicBotControlBtn');
+const botControlStatusBtn = document.getElementById('botControlStatusBtn');
+const staticBotQuotaInput = document.getElementById('staticBotQuotaInput');
+const setStaticBotQuotaBtn = document.getElementById('setStaticBotQuotaBtn');
+const botControlMessage = document.getElementById('botControlMessage');
+const teamHandicapStatus = document.getElementById('teamHandicapStatus');
+const teamHandicapNoneBtn = document.getElementById('teamHandicapNoneBtn');
+const teamHandicapCtBtn = document.getElementById('teamHandicapCtBtn');
+const teamHandicapTBtn = document.getElementById('teamHandicapTBtn');
+const teamHandicapFallback = document.getElementById('teamHandicapFallback');
+const teamHandicapClearCtBtn = document.getElementById('teamHandicapClearCtBtn');
+const teamHandicapClearTBtn = document.getElementById('teamHandicapClearTBtn');
 const csApiMessageInput = document.getElementById('csApiMessageInput');
 const csApiSendMessageBtn = document.getElementById('csApiSendMessageBtn');
 const compactModeToggle = document.getElementById('compactModeToggle');
@@ -1126,6 +1163,26 @@ async function sendMatchPauseAnnouncement(state) {
   return true;
 }
 
+async function sendTeamHandicapAnnouncement(state) {
+  const lines = TEAM_HANDICAP_ANNOUNCEMENTS[state];
+  if (!lines) return false;
+
+  const action = state === 'cleared'
+    ? 'Team Handicap clear announcement'
+    : `Team Handicap ${state.toUpperCase()} announcement`;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const sent = await sendServerMessage(lines[index], {
+      logLabel: `${action} (${index + 1}/${lines.length})`,
+      updateStatus: false
+    });
+    if (!sent) return false;
+  }
+
+  appendFormattedAnnouncementLog(lines);
+  return true;
+}
+
 async function sendPresetAnnouncement(button) {
   const message = button?.dataset.message || '';
   if (button) button.disabled = true;
@@ -1134,6 +1191,282 @@ async function sendPresetAnnouncement(button) {
     return await sendFormattedServerMessage(message);
   } finally {
     if (button) button.disabled = false;
+  }
+}
+
+function setBotControlMessage(message, type = '') {
+  if (!botControlMessage) return;
+  botControlMessage.textContent = message;
+  botControlMessage.classList.toggle('visible', Boolean(message));
+  botControlMessage.classList.toggle('success', type === 'success');
+}
+
+function getIntegerInputValue(input) {
+  if (!input) return NaN;
+  const value = Number(input.value);
+  return Number.isInteger(value) ? value : NaN;
+}
+
+function validateBotRange(value, min, max, label) {
+  if (Number.isNaN(value)) return `${label} must be a whole number.`;
+  if (value < min || value > max) return `${label} must be between ${min} and ${max}.`;
+  return '';
+}
+
+function setBotControlButtonsDisabled(disabled) {
+  [
+    applyDynamicBotControlBtn,
+    enableDynamicBotControlBtn,
+    disableDynamicBotControlBtn,
+    botControlStatusBtn,
+    setStaticBotQuotaBtn,
+    teamHandicapNoneBtn,
+    teamHandicapCtBtn,
+    teamHandicapTBtn,
+    teamHandicapClearCtBtn,
+    teamHandicapClearTBtn
+  ].forEach((button) => {
+    if (button) button.disabled = disabled;
+  });
+}
+
+function getBotControlResponseMessage(body, fallback) {
+  return body?.message || body?.result?.message || fallback;
+}
+
+function parseTeamHandicapStatus(message) {
+  if (typeof message !== 'string') return 'unknown';
+
+  const match = message.match(/\bExtra:\s*(CT|T|None|No|Off|-)\b/i);
+  if (!match) return 'unknown';
+
+  const value = match[1].toLowerCase();
+  if (value === 'ct') return 'ct';
+  if (value === 't') return 't';
+  return 'none';
+}
+
+function getTeamHandicapLabel(state) {
+  if (state === 'ct') return 'Handicap: CT +1 bot';
+  if (state === 't') return 'Handicap: T +1 bot';
+  if (state === 'none') return 'Handicap: None';
+  return 'Handicap: Unknown';
+}
+
+function updateTeamHandicapUi(state) {
+  currentTeamHandicap = ['ct', 't', 'none', 'unknown'].includes(state) ? state : 'unknown';
+
+  if (teamHandicapStatus) {
+    teamHandicapStatus.textContent = getTeamHandicapLabel(currentTeamHandicap);
+  }
+
+  if (teamHandicapCtBtn) {
+    teamHandicapCtBtn.classList.toggle('active', currentTeamHandicap === 'ct');
+  }
+  if (teamHandicapTBtn) {
+    teamHandicapTBtn.classList.toggle('active', currentTeamHandicap === 't');
+  }
+  if (teamHandicapNoneBtn) {
+    teamHandicapNoneBtn.classList.toggle('active', currentTeamHandicap === 'none');
+  }
+  if (teamHandicapFallback) {
+    teamHandicapFallback.hidden = currentTeamHandicap !== 'unknown';
+  }
+}
+
+async function refreshTeamHandicapStatus() {
+  const body = await sendDynamicBotControl('status');
+  const statusMessage = getBotControlResponseMessage(body, '');
+  updateTeamHandicapUi(parseTeamHandicapStatus(statusMessage));
+  return body;
+}
+
+async function sendStaticBotQuota() {
+  const bots = getIntegerInputValue(staticBotQuotaInput);
+  const validation = validateBotRange(bots, 0, 24, 'Fixed bot quota');
+
+  if (validation) {
+    setBotControlMessage(validation, 'error');
+    return false;
+  }
+
+  setBotControlButtonsDisabled(true);
+
+  try {
+    const response = await fetch('/api/cs/botcontrol/static', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bots })
+    });
+    const body = await response.json().catch(() => null);
+    appendCsApiResponseLog(`Bot Control static quota: ${bots}`, response, body);
+
+    if (!response.ok) {
+      const errorMessage = body?.message || body?.error || response.statusText;
+      setBotControlMessage(`Static bot quota failed: ${response.status} ${errorMessage}`, 'error');
+      return false;
+    }
+
+    setBotControlMessage(getBotControlResponseMessage(body, `Static bot quota set to ${bots}.`), 'success');
+    return true;
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog(`Bot Control static quota: ${bots}`, null, { error: message });
+    setBotControlMessage(`Static bot quota error: ${message}`, 'error');
+    return false;
+  } finally {
+    setBotControlButtonsDisabled(false);
+  }
+}
+
+async function sendDynamicBotControl(command, bots) {
+  const payload = { command };
+
+  if (bots !== undefined) {
+    payload.bots = bots;
+  }
+
+  const response = await fetch('/api/cs/botcontrol/dynamic', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const body = await response.json().catch(() => null);
+  const logSuffix = bots !== undefined ? `${command}: ${bots}` : command;
+  appendCsApiResponseLog(`Bot Control dynamic ${logSuffix}`, response, body);
+
+  if (!response.ok) {
+    const errorMessage = body?.message || body?.error || response.statusText;
+    throw new Error(`${response.status} ${errorMessage}`);
+  }
+
+  return body;
+}
+
+async function runDynamicBotControl(command, bots) {
+  setBotControlButtonsDisabled(true);
+
+  try {
+    const body = await sendDynamicBotControl(command, bots);
+    if (command === 'status') {
+      updateTeamHandicapUi(parseTeamHandicapStatus(getBotControlResponseMessage(body, '')));
+    }
+    setBotControlMessage(getBotControlResponseMessage(body, `Dynamic bot control ${command} accepted.`), 'success');
+    return true;
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog(`Bot Control dynamic ${command}`, null, { error: message });
+    setBotControlMessage(`Dynamic bot control failed: ${message}`, 'error');
+    return false;
+  } finally {
+    setBotControlButtonsDisabled(false);
+  }
+}
+
+async function sendTeamHandicapCommand(command, announcementState) {
+  setBotControlButtonsDisabled(true);
+
+  try {
+    const commandBody = await sendDynamicBotControl(command);
+    const commandMessage = getBotControlResponseMessage(commandBody, `Team handicap ${command} accepted.`);
+    const announcementSent = await sendTeamHandicapAnnouncement(announcementState);
+    const statusBody = await refreshTeamHandicapStatus();
+
+    if (announcementSent) {
+      setBotControlMessage(getBotControlResponseMessage(statusBody, commandMessage), 'success');
+    } else {
+      setBotControlMessage(`${commandMessage} Announcement failed.`, 'error');
+    }
+
+    return announcementSent;
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog(`Team Handicap ${command}`, null, { error: message });
+    setBotControlMessage(`Team handicap failed: ${message}`, 'error');
+    return false;
+  } finally {
+    setBotControlButtonsDisabled(false);
+  }
+}
+
+async function setTeamHandicap(team) {
+  if (team === 'ct') {
+    return sendTeamHandicapCommand('add_ct', 'ct');
+  }
+  if (team === 't') {
+    return sendTeamHandicapCommand('add_t', 't');
+  }
+  return false;
+}
+
+async function clearTeamHandicap(team) {
+  if (team !== 'ct' && team !== 't') return false;
+  const command = team === 'ct' ? 'del_ct' : 'del_t';
+  return sendTeamHandicapCommand(command, 'cleared');
+}
+
+async function clearCurrentTeamHandicap() {
+  if (currentTeamHandicap === 'ct' || currentTeamHandicap === 't') {
+    return clearTeamHandicap(currentTeamHandicap);
+  }
+
+  if (currentTeamHandicap === 'none') {
+    setBotControlMessage('Team handicap is already clear.', 'success');
+    return true;
+  }
+
+  updateTeamHandicapUi('unknown');
+  setBotControlMessage('Handicap status is unknown. Use Clear CT or Clear T.', 'error');
+  return false;
+}
+
+async function applyDynamicBotControl() {
+  const minPlayers = getIntegerInputValue(botControlMinPlayersInput);
+  const maxPlayers = getIntegerInputValue(botControlMaxPlayersInput);
+  const minValidation = validateBotRange(minPlayers, 1, 24, 'Min players');
+  const maxValidation = validateBotRange(maxPlayers, 1, 24, 'Max players');
+
+  if (minValidation) {
+    setBotControlMessage(minValidation, 'error');
+    return false;
+  }
+
+  if (maxValidation) {
+    setBotControlMessage(maxValidation, 'error');
+    return false;
+  }
+
+  if (minPlayers >= maxPlayers) {
+    setBotControlMessage('Min players must be lower than max players.', 'error');
+    return false;
+  }
+
+  setBotControlButtonsDisabled(true);
+
+  try {
+    try {
+      await sendDynamicBotControl('max', maxPlayers);
+      await sendDynamicBotControl('min', minPlayers);
+    } catch (firstOrderError) {
+      appendCsApiResponseLog('Bot Control dynamic apply retry', null, {
+        message: `Retrying min before max after: ${firstOrderError.message}`
+      });
+      await sendDynamicBotControl('min', minPlayers);
+      await sendDynamicBotControl('max', maxPlayers);
+    }
+
+    const body = await sendDynamicBotControl('on');
+    setBotControlMessage(getBotControlResponseMessage(body, `Dynamic bot control enabled. Min: ${minPlayers}. Max: ${maxPlayers}.`), 'success');
+    return true;
+  } catch (err) {
+    const message = err && err.message ? err.message : 'Unknown error';
+    appendCsApiResponseLog('Bot Control dynamic apply', null, { error: message });
+    setBotControlMessage(`Apply dynamic bot control failed: ${message}`, 'error');
+    return false;
+  } finally {
+    setBotControlButtonsDisabled(false);
   }
 }
 
@@ -1811,90 +2144,6 @@ async function addMapToLibrary() {
   }
 }
 
-function toggleBalanceUI() {
-  const wrapper = document.getElementById('balanceWrapper');
-  const isVisible = wrapper.classList.contains('visible');
-
-  wrapper.classList.toggle('visible');
-  if (!isVisible) {
-    setTimeout(() => {
-      const el = document.getElementById('ctPlayers');
-      if (el) el.focus();
-    }, 50);
-  }
-}
-
-function getCTPlayers() {
-  const input = document.getElementById('ctPlayers');
-  return input ? Number(input.value) : NaN;
-}
-
-function getTPlayers() {
-  const input = document.getElementById('tPlayers');
-  return input ? Number(input.value) : NaN;
-}
-
-function showBalanceError(message) {
-  const el = document.getElementById('balanceMessage');
-  if (!el) return;
-  el.textContent = message;
-  el.classList.toggle('visible', Boolean(message));
-}
-
-function validatePlayers(value) {
-  if (Number.isNaN(value)) return 'Must be a number between 0 and 10.';
-  if (!Number.isInteger(value)) return 'Must be a whole number.';
-  if (value < 0 || value > 10) return 'Value must be between 0 and 10.';
-  return '';
-}
-
-function balanceBots() {
-  const ct = getCTPlayers();
-  const t = getTPlayers();
-
-  const v1 = validatePlayers(ct);
-  const v2 = validatePlayers(t);
-
-  if (v1) {
-    showBalanceError(`CT: ${v1}`);
-    return;
-  }
-
-  if (v2) {
-    showBalanceError(`T: ${v2}`);
-    return;
-  }
-
-  showBalanceError('');
-
-  // Always start with bot_kick per requirement
-  addCommand('bot_kick');
-
-  if (ct === t) {
-    addCommand("say >>>>> TEAMS ALREADY BALANCED <<<<<");
-    return;
-  }
-
-  const diff = Math.abs(ct - t);
-  const target = ct < t ? 'bot_add_ct' : 'bot_add_t';
-
-  for (let i = 0; i < diff; i++) {
-    addCommand(target);
-  }
-}
-
-function addCTBot() {
-  addCommand('bot_add_ct');
-}
-
-function addTBot() {
-  addCommand('bot_add_t');
-}
-
-function kickBots() {
-  addCommand('bot_kick');
-}
-
 function updatePauseButton() {
   if (!pauseToggleBtn) return;
 
@@ -1964,9 +2213,6 @@ function getActivityLabel(command) {
   }
 
   const labels = {
-    'bot_kick': 'Kick bots',
-    'bot_add_ct': 'Add CT bot',
-    'bot_add_t': 'Add T bot',
     'mp_pause_match': 'Pause match',
     'mp_unpause_match': 'Resume match',
     'mp_restartgame 1': 'Restart match',
@@ -2220,6 +2466,48 @@ if (csApiWarmupBtn) {
 if (csApiOrdinaryBtn) {
   csApiOrdinaryBtn.addEventListener('click', () => execConfig('owu.cfg', 'owu'));
 }
+
+if (applyDynamicBotControlBtn) {
+  applyDynamicBotControlBtn.addEventListener('click', applyDynamicBotControl);
+}
+
+if (enableDynamicBotControlBtn) {
+  enableDynamicBotControlBtn.addEventListener('click', () => runDynamicBotControl('on'));
+}
+
+if (disableDynamicBotControlBtn) {
+  disableDynamicBotControlBtn.addEventListener('click', () => runDynamicBotControl('off'));
+}
+
+if (botControlStatusBtn) {
+  botControlStatusBtn.addEventListener('click', () => runDynamicBotControl('status'));
+}
+
+if (setStaticBotQuotaBtn) {
+  setStaticBotQuotaBtn.addEventListener('click', sendStaticBotQuota);
+}
+
+if (teamHandicapNoneBtn) {
+  teamHandicapNoneBtn.addEventListener('click', clearCurrentTeamHandicap);
+}
+
+if (teamHandicapCtBtn) {
+  teamHandicapCtBtn.addEventListener('click', () => setTeamHandicap('ct'));
+}
+
+if (teamHandicapTBtn) {
+  teamHandicapTBtn.addEventListener('click', () => setTeamHandicap('t'));
+}
+
+if (teamHandicapClearCtBtn) {
+  teamHandicapClearCtBtn.addEventListener('click', () => clearTeamHandicap('ct'));
+}
+
+if (teamHandicapClearTBtn) {
+  teamHandicapClearTBtn.addEventListener('click', () => clearTeamHandicap('t'));
+}
+
+updateTeamHandicapUi('unknown');
 
 updatePauseButton();
 

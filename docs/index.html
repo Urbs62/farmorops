@@ -88,33 +88,51 @@
             <button id="pauseToggleBtn" class="action-button secondary readiness-verified-api" onclick="togglePauseMatch()" title="Verified CS API action. Pause state is inferred.">
               Pause Match
             </button>
-            <button class="action-button secondary readiness-legacy-rcon" onclick="addCommand('bot_kick')" title="Legacy/RCON path">
-              Kick Bots
-            </button>
           </div>
 
-          <div class="toolbar bot-toolbar">
-            <button class="action-button" id="balanceToggleBtn" onclick="toggleBalanceUI()">
-              Balance Bots
-            </button>
-            <button class="secondary readiness-legacy-rcon" onclick="addCTBot()" title="Legacy/RCON path">Add CT Bot</button>
-            <button class="secondary readiness-legacy-rcon" onclick="addTBot()" title="Legacy/RCON path">Add T Bot</button>
-            <button class="secondary readiness-legacy-rcon" onclick="kickBots()" title="Legacy/RCON path">Kick Bots</button>
-          </div>
-
-          <div class="balance-wrapper" id="balanceWrapper">
-            <div class="control-row">
-              <label for="ctPlayers">Players in CT</label>
-              <input type="number" id="ctPlayers" min="0" max="10" value="5" />
+          <div class="server-control-form bot-control-section">
+            <label>Bot Control</label>
+            <div class="bot-control-grid">
+              <div class="control-row">
+                <label for="botControlMinPlayers">Min players</label>
+                <input type="number" id="botControlMinPlayers" min="1" max="24" value="6" />
+              </div>
+              <div class="control-row">
+                <label for="botControlMaxPlayers">Max players</label>
+                <input type="number" id="botControlMaxPlayers" min="1" max="24" value="8" />
+              </div>
             </div>
-            <div class="control-row">
-              <label for="tPlayers">Players in T</label>
-              <input type="number" id="tPlayers" min="0" max="10" value="5" />
+            <div class="button-group">
+              <button class="readiness-verified-api" id="applyDynamicBotControlBtn" title="Verified CS API action">Apply Dynamic Bot Control</button>
+              <button class="secondary readiness-verified-api" id="enableDynamicBotControlBtn" title="Verified CS API action">Enable Dynamic</button>
+              <button class="secondary readiness-verified-api" id="disableDynamicBotControlBtn" title="Verified CS API action">Disable Dynamic</button>
+              <button class="secondary readiness-verified-api" id="botControlStatusBtn" title="Verified CS API action">Get Bot Control Status</button>
             </div>
-            <div class="control-row">
-              <button class="readiness-legacy-rcon" onclick="balanceBots()" title="Legacy/RCON path">Balance</button>
+            <div class="team-handicap-control" aria-label="Team Handicap">
+              <div class="team-handicap-header">
+                <label>Team Handicap</label>
+                <span id="teamHandicapStatus">Handicap: Unknown</span>
+              </div>
+              <div class="button-group team-handicap-buttons">
+                <button class="secondary readiness-verified-api" id="teamHandicapNoneBtn" title="Clear Team Handicap through Bot Control">None</button>
+                <button class="secondary readiness-verified-api" id="teamHandicapCtBtn" title="Give CT one extra bot through Bot Control">CT +1 bot</button>
+                <button class="secondary readiness-verified-api" id="teamHandicapTBtn" title="Give T one extra bot through Bot Control">T +1 bot</button>
+              </div>
+              <div class="button-group team-handicap-fallback" id="teamHandicapFallback" hidden>
+                <button class="secondary readiness-verified-api" id="teamHandicapClearCtBtn" title="Clear CT extra bot through Bot Control">Clear CT</button>
+                <button class="secondary readiness-verified-api" id="teamHandicapClearTBtn" title="Clear T extra bot through Bot Control">Clear T</button>
+              </div>
             </div>
-            <div class="input-error" id="balanceMessage" aria-live="polite"></div>
+            <div class="bot-control-grid bot-control-static">
+              <div class="control-row">
+                <label for="staticBotQuotaInput">Fixed bot quota</label>
+                <input type="number" id="staticBotQuotaInput" min="0" max="24" value="0" />
+              </div>
+              <div class="control-row control-row-button">
+                <button class="secondary readiness-verified-api" id="setStaticBotQuotaBtn" title="Verified CS API action">Set Static Bot Quota</button>
+              </div>
+            </div>
+            <div class="input-error" id="botControlMessage" aria-live="polite"></div>
           </div>
 
           <div class="server-control-form">
