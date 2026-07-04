@@ -19,6 +19,7 @@ const EMPTY_MAP_STATE = {
   selectableMaps: [],
   tonightMapCycle: [],
   tonightMapProgress: {
+    sessionId: '',
     playedMaps: [],
     currentMap: ''
   }
@@ -87,6 +88,11 @@ function normalizeMapStatePayload(payload) {
   const currentMap = typeof progress.currentMap === 'string' && tonightMapCycle.includes(progress.currentMap)
     ? progress.currentMap
     : '';
+  const existingSessionId = typeof progress.sessionId === 'string' ? progress.sessionId : '';
+  const sessionId = existingSessionId || (playedMaps.length > 0 || Boolean(currentMap) ? new Date().toISOString() : '');
+  const hasLegacyProgress = !existingSessionId && (playedMaps.length > 0 || Boolean(currentMap));
+  const normalizedPlayedMaps = hasLegacyProgress ? [] : playedMaps;
+  const normalizedCurrentMap = hasLegacyProgress ? '' : currentMap;
 
   const normalizeStoredMaps = maps => Array.isArray(maps)
     ? maps.map(map => ({
@@ -100,10 +106,19 @@ function normalizeMapStatePayload(payload) {
     selectableMaps: normalizeStoredMaps(state.selectableMaps),
     tonightMapCycle,
     tonightMapProgress: {
-      playedMaps: [...new Set(playedMaps)],
-      currentMap
+      sessionId,
+      playedMaps: [...new Set(normalizedPlayedMaps)],
+      currentMap: normalizedCurrentMap
     }
   };
+}
+
+function hasLegacyMapProgress(state) {
+  const progress = state?.tonightMapProgress;
+  if (!progress || typeof progress !== 'object' || Array.isArray(progress)) return false;
+  if (typeof progress.sessionId === 'string' && progress.sessionId.trim()) return false;
+  const playedMaps = Array.isArray(progress.playedMaps) ? progress.playedMaps : [];
+  return playedMaps.length > 0 || Boolean(progress.currentMap);
 }
 
 function isValidStoredMap(map) {
@@ -125,6 +140,7 @@ function isValidMapState(state) {
     && state.tonightMapProgress
     && typeof state.tonightMapProgress === 'object'
     && !Array.isArray(state.tonightMapProgress)
+    && typeof state.tonightMapProgress.sessionId === 'string'
     && Array.isArray(state.tonightMapProgress.playedMaps)
     && state.tonightMapProgress.playedMaps.every(map => typeof map === 'string')
     && typeof state.tonightMapProgress.currentMap === 'string';
@@ -135,6 +151,9 @@ async function readFarmorOpsMapState() {
     const content = await fs.readFile(FARMOROPS_STATE_FILE, 'utf8');
     const parsed = JSON.parse(content);
     const state = normalizeMapStatePayload(parsed);
+    if (hasLegacyMapProgress(parsed)) {
+      await writeFarmorOpsMapState(state);
+    }
     return isValidMapState(state) ? state : { ...EMPTY_MAP_STATE };
   } catch (err) {
     if (err && err.code === 'ENOENT') {

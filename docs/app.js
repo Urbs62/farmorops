@@ -56,7 +56,7 @@ const SERVER_STATUS_REFRESH_MAX_RETRIES = 2;
 let maps = [];
 let inventoryMaps = [];
 let cycle = [];
-let cycleProgress = { playedMaps: [], currentMap: '' };
+let cycleProgress = { sessionId: '', playedMaps: [], currentMap: '' };
 let draggedCycleIndex = null;
 let cycleDropIndex = null;
 let lastServerStatus = null;
@@ -310,6 +310,26 @@ function normalizeStoredMap(map) {
   };
 }
 
+function createCycleProgressSessionId() {
+  return new Date().toISOString();
+}
+
+function getEmptyCycleProgress(sessionId = createCycleProgressSessionId()) {
+  return {
+    sessionId,
+    playedMaps: [],
+    currentMap: ''
+  };
+}
+
+function hasLegacyCycleProgress(state) {
+  const progress = state?.tonightMapProgress;
+  if (!progress || typeof progress !== 'object' || Array.isArray(progress)) return false;
+  if (typeof progress.sessionId === 'string' && progress.sessionId.trim()) return false;
+  const playedMaps = Array.isArray(progress.playedMaps) ? progress.playedMaps : [];
+  return playedMaps.length > 0 || Boolean(progress.currentMap);
+}
+
 function normalizeSharedMapState(state) {
   const source = state && typeof state === 'object' && !Array.isArray(state)
     ? state
@@ -326,6 +346,10 @@ function normalizeSharedMapState(state) {
   const currentMap = typeof progress.currentMap === 'string' && tonightMapCycle.includes(progress.currentMap)
     ? progress.currentMap
     : '';
+  const hasLegacyProgress = hasLegacyCycleProgress(source);
+  const sessionId = typeof progress.sessionId === 'string' && progress.sessionId.trim()
+    ? progress.sessionId
+    : createCycleProgressSessionId();
 
   return {
     availableMaps: Array.isArray(source.availableMaps) && source.availableMaps.every(isValidMap)
@@ -336,8 +360,9 @@ function normalizeSharedMapState(state) {
       : [],
     tonightMapCycle,
     tonightMapProgress: {
-      playedMaps: [...new Set(playedMaps)],
-      currentMap
+      sessionId,
+      playedMaps: hasLegacyProgress ? [] : [...new Set(playedMaps)],
+      currentMap: hasLegacyProgress ? '' : currentMap
     }
   };
 }
@@ -397,6 +422,7 @@ async function loadSharedMapState() {
     throw new Error(`Failed to load shared map state: ${response.status} ${errorMessage}`);
   }
 
+  const hadLegacyProgress = hasLegacyCycleProgress(body);
   let state = normalizeSharedMapState(body);
   const legacyState = getLegacySharedMapState();
 
@@ -408,6 +434,11 @@ async function loadSharedMapState() {
   }
 
   applySharedMapState(state);
+
+  if (hadLegacyProgress) {
+    await saveSharedMapState(state);
+    setImportStatus('Old cycle progress was cleared. Start New Night session is ready.', 'success');
+  }
 }
 
 async function saveSharedMapState(state = getCurrentSharedMapState()) {
@@ -766,8 +797,12 @@ function getCleanCycleProgress(progress = cycleProgress) {
   const currentMap = typeof progress.currentMap === 'string' && cycle.includes(progress.currentMap)
     ? progress.currentMap
     : '';
+  const sessionId = typeof progress.sessionId === 'string' && progress.sessionId.trim()
+    ? progress.sessionId
+    : createCycleProgressSessionId();
 
   return {
+    sessionId,
     playedMaps: [...new Set(playedMaps)],
     currentMap
   };
@@ -790,6 +825,7 @@ async function updateCycleProgressForLoadedMap(mapValue) {
   playedMaps.delete(cycleMap);
 
   await saveCycleProgress({
+    sessionId: cycleProgress.sessionId,
     playedMaps: [...playedMaps],
     currentMap: cycleMap
   });
@@ -803,6 +839,7 @@ async function syncCycleProgressFromServerStatus(status) {
   if (currentIndex >= 0 && statusIndex >= 0 && statusIndex < currentIndex) return;
 
   await saveCycleProgress({
+    sessionId: cycleProgress.sessionId,
     playedMaps: cycleProgress.playedMaps || [],
     currentMap: cycleMap
   });
@@ -1969,8 +2006,10 @@ async function clearMaps() {
 
   const previousMaps = [...maps];
   const previousCycle = [...cycle];
+  const previousProgress = { ...cycleProgress, playedMaps: [...(cycleProgress.playedMaps || [])] };
   maps = [];
   cycle = [];
+  cycleProgress = getEmptyCycleProgress();
   try {
     await saveSharedMapState();
     renderMaps();
@@ -1979,6 +2018,7 @@ async function clearMaps() {
   } catch (err) {
     maps = previousMaps;
     cycle = previousCycle;
+    cycleProgress = previousProgress;
     renderMaps();
     renderCycle();
     showSharedMapStateError(err);
@@ -1987,32 +2027,39 @@ async function clearMaps() {
 
 async function clearCycle() {
   const previousCycle = [...cycle];
+  const previousProgress = { ...cycleProgress, playedMaps: [...(cycleProgress.playedMaps || [])] };
   cycle = [];
+  cycleProgress = getEmptyCycleProgress();
   try {
     await saveSharedMapState();
     renderCycle();
     addCommand('# Cleared tonight map cycle');
   } catch (err) {
     cycle = previousCycle;
+    cycleProgress = previousProgress;
+    renderCycle();
+    showSharedMapStateError(err);
+  }
+}
+
+async function startNewNight(message = '# Started new night and reset cycle progress') {
+  const previousProgress = { ...cycleProgress, playedMaps: [...(cycleProgress.playedMaps || [])] };
+  cycleProgress = getEmptyCycleProgress();
+  renderCycle();
+
+  try {
+    await saveSharedMapState();
+    renderCycle();
+    addCommand(message);
+  } catch (err) {
+    cycleProgress = previousProgress;
     renderCycle();
     showSharedMapStateError(err);
   }
 }
 
 async function resetCycleProgress() {
-  const previousProgress = { ...cycleProgress, playedMaps: [...(cycleProgress.playedMaps || [])] };
-  cycleProgress = { playedMaps: [], currentMap: '' };
-  renderCycle();
-
-  try {
-    await saveSharedMapState();
-    renderCycle();
-    addCommand('# Reset tonight cycle progress');
-  } catch (err) {
-    cycleProgress = previousProgress;
-    renderCycle();
-    showSharedMapStateError(err);
-  }
+  await startNewNight('# Reset tonight cycle progress');
 }
 
 function getMapCommand(mapName) {
