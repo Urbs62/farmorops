@@ -95,10 +95,17 @@ function normalizeMapStatePayload(payload) {
   const normalizedCurrentMap = hasLegacyProgress ? '' : currentMap;
 
   const normalizeStoredMaps = maps => Array.isArray(maps)
-    ? maps.map(map => ({
-      ...map,
-      favorite: map && map.favorite === true
-    }))
+    ? maps.map(map => {
+      const mapName = String(map?.mapName || (map?.type === 'workshop' ? map?.name : map?.value || map?.name) || '').trim();
+      return {
+        ...map,
+        mapName,
+        favorite: map && map.favorite === true,
+        tags: Array.isArray(map?.tags)
+          ? ['Classic', 'Small', 'Medium', 'Large', 'Review', 'To be removed'].filter(tag => map.tags.includes(tag))
+          : []
+      };
+    }).filter(map => !map.mapName.toLowerCase().endsWith('_vanity'))
     : [];
 
   return {

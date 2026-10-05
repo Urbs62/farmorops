@@ -6,6 +6,9 @@ const STORAGE_KEYS = {
   libraryCollapsed: 'farmorops.libraryCollapsed',
   availableFilter: 'farmorops.availableFilter'
 };
+const SELECTABLE_MAPS_STORAGE_KEY = 'farmorops.selectableMaps';
+const INVENTORY_MAPS_STORAGE_KEY = 'farmorops.inventoryMaps';
+const MAP_TAGS = Object.freeze(['Classic', 'Small', 'Medium', 'Large', 'Review', 'To be removed']);
 
 const LEGACY_MAP_STORAGE_KEYS = {
   selectableMaps: 'farmorops_selectable_maps_v1',
@@ -61,6 +64,8 @@ let draggedCycleIndex = null;
 let cycleDropIndex = null;
 let lastServerStatus = null;
 let availableFilter = readStorage(STORAGE_KEYS.availableFilter, 'all');
+let mapTagFilter = 'all';
+let tagEditSaving = false;
 if (!['all', 'favorites', 'standard', 'workshop'].includes(availableFilter)) {
   availableFilter = 'all';
 }
@@ -69,6 +74,7 @@ let matchPaused = false;
 let currentTeamHandicap = 'unknown';
 
 const mapList = document.getElementById('mapList');
+const mapTagFilterButtons = document.getElementById('mapTagFilterButtons');
 const inventoryList = document.getElementById('inventoryList');
 const availableFilterButtons = document.getElementById('availableFilterButtons');
 const cycleList = document.getElementById('cycleList');
@@ -303,11 +309,74 @@ function isValidMap(map) {
     && typeof map.value === 'string';
 }
 
+function getInternalMapName(map) {
+  return String(map?.mapName || (map?.type === 'workshop' ? map?.name : map?.value || map?.name) || '').trim();
+}
+
+function isVanityMap(map) {
+  return getInternalMapName(map).toLowerCase().endsWith('_vanity');
+}
+
+function getInventoryIdentity(map) {
+  if (map.type === 'workshop') {
+    const workshopId = map.workshopId || (/^\d+$/.test(String(map.value || '')) ? map.value : '')
+      || (/^workshop:\d+$/.test(String(map.id || '')) ? map.id : '');
+    return workshopId ? `workshop:${String(workshopId).replace(/^workshop:/, '')}` : '';
+  }
+  return `standard:${getInternalMapName(map)}`;
+}
+
+function mergeInventoryMaps(items) {
+  const merged = new Map();
+  items.filter(map => !isVanityMap(map)).forEach(map => {
+    const key = getInventoryIdentity(map);
+    if (!key) {
+      merged.set(Symbol(), map);
+      return;
+    }
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, map);
+      return;
+    }
+    const preferredName = [existing.name, map.name].find(name => name && name !== getInternalMapName(map));
+    merged.set(key, { ...existing, ...map, name: preferredName || map.name, favorite: Boolean(existing.favorite || map.favorite) });
+  });
+  return [...merged.values()];
+}
+
 function normalizeStoredMap(map) {
   return {
     ...map,
-    favorite: map.favorite === true
+    mapName: getInternalMapName(map),
+    favorite: map.favorite === true,
+    tags: Array.isArray(map.tags) ? MAP_TAGS.filter(tag => map.tags.includes(tag)) : []
   };
+}
+
+// Only the master inventory owns tags; selections resolve them by internal name.
+function getMasterMap(map) {
+  return inventoryMaps.find(item => getInternalMapName(item) === getInternalMapName(map));
+}
+
+function getMapTags(map) {
+  return getMasterMap(map)?.tags || [];
+}
+
+function renderMapTagBadges(map) {
+  return getMapTags(map).map(tag => `<span class="map-tag-badge">${escapeHtml(tag)}</span>`).join('');
+}
+
+function migrateMapTags(availableMaps, selectableMaps) {
+  selectableMaps.forEach(map => {
+    let master = availableMaps.find(item => getInternalMapName(item) === getInternalMapName(map));
+    if (!master) {
+      master = { ...map, tags: [] };
+      availableMaps.push(master);
+    }
+    master.tags = MAP_TAGS.filter(tag => master.tags.includes(tag) || (map.tags || []).includes(tag));
+    delete map.tags;
+  });
 }
 
 function createCycleProgressSessionId() {
@@ -351,13 +420,15 @@ function normalizeSharedMapState(state) {
     ? progress.sessionId
     : createCycleProgressSessionId();
 
+  const availableMaps = Array.isArray(source.availableMaps) && source.availableMaps.every(isValidMap)
+    ? mergeInventoryMaps(source.availableMaps.map(normalizeStoredMap)) : [];
+  const selectableMaps = Array.isArray(source.selectableMaps) && source.selectableMaps.every(isValidMap)
+    ? source.selectableMaps.map(normalizeStoredMap).filter(map => !isVanityMap(map)) : [];
+  migrateMapTags(availableMaps, selectableMaps);
+
   return {
-    availableMaps: Array.isArray(source.availableMaps) && source.availableMaps.every(isValidMap)
-      ? source.availableMaps.map(normalizeStoredMap)
-      : [],
-    selectableMaps: Array.isArray(source.selectableMaps) && source.selectableMaps.every(isValidMap)
-      ? source.selectableMaps.map(normalizeStoredMap)
-      : [],
+    availableMaps,
+    selectableMaps,
     tonightMapCycle,
     tonightMapProgress: {
       sessionId,
@@ -423,7 +494,19 @@ async function loadSharedMapState() {
   }
 
   const hadLegacyProgress = hasLegacyCycleProgress(body);
-  let state = normalizeSharedMapState(body);
+  const cachedInventory = readStorage(INVENTORY_MAPS_STORAGE_KEY, null);
+  const oldLocalMaps = cachedInventory === null ? readStorage(SELECTABLE_MAPS_STORAGE_KEY, []) : [];
+  let state = normalizeSharedMapState({
+    ...body,
+    availableMaps: (body?.availableMaps || []).map(map => {
+      const cached = Array.isArray(cachedInventory)
+        ? cachedInventory.find(item => getInternalMapName(item) === getInternalMapName(map)) : null;
+      return { ...map, tags: map.tags ?? cached?.tags ?? [] };
+    })
+  });
+  if (Array.isArray(oldLocalMaps)) {
+    migrateMapTags(state.availableMaps, oldLocalMaps.filter(isValidMap).map(normalizeStoredMap).filter(map => !isVanityMap(map)));
+  }
   const legacyState = getLegacySharedMapState();
 
   if (!hasSharedMapState(state) && hasSharedMapState(legacyState)) {
@@ -433,7 +516,14 @@ async function loadSharedMapState() {
     setImportStatus('Migrated local map state to shared backend storage.', 'success');
   }
 
+  // Persist migrated ownership before retiring the old local selectable tags.
+  if (JSON.stringify(state.availableMaps) !== JSON.stringify(normalizeSharedMapState(body).availableMaps)
+      || (body?.selectableMaps || []).some(map => map.tags?.length)) {
+    await saveSharedMapState(state);
+  }
   applySharedMapState(state);
+  writeStorage(INVENTORY_MAPS_STORAGE_KEY, inventoryMaps);
+  writeStorage(SELECTABLE_MAPS_STORAGE_KEY, maps);
 
   if (hadLegacyProgress) {
     await saveSharedMapState(state);
@@ -456,6 +546,8 @@ async function saveSharedMapState(state = getCurrentSharedMapState()) {
   }
 
   applySharedMapState(body);
+  writeStorage(INVENTORY_MAPS_STORAGE_KEY, inventoryMaps);
+  writeStorage(SELECTABLE_MAPS_STORAGE_KEY, maps);
 }
 
 function showSharedMapStateError(error, action = 'save') {
@@ -664,6 +756,8 @@ function getMapIdentity(map) {
 
 function areSameMapIdentity(left, right) {
   if (!left || !right) return false;
+  if (left.type !== right.type) return false;
+  if (getInventoryIdentity(left) && getInventoryIdentity(left) === getInventoryIdentity(right)) return true;
   if (left.id || right.id) {
     return Boolean(left.id && right.id && left.id === right.id);
   }
@@ -760,7 +854,7 @@ function getChangeMapValue(map) {
       : `workshop:${workshopValue}`;
   }
 
-  return map.value || map.name || map.id || '';
+  return map.mapName || map.value || map.name || map.id || '';
 }
 
 function normalizeMapToken(value) {
@@ -857,11 +951,13 @@ function normalizeServerMap(map) {
   if (!map || typeof map !== 'object') return null;
 
   const isWorkshop = map.source === 'WORKSHOP';
-  const value = isWorkshop ? (map.workshopId || map.name) : map.name;
+  const mapName = String(map.mapName || map.name || '').trim();
+  const value = isWorkshop ? (map.workshopId || map.name) : mapName;
 
   return {
-    id: map.id || map.name,
-    name: map.displayName || map.name,
+    id: map.id || mapName,
+    name: map.displayName || map.name || mapName,
+    mapName,
     type: isWorkshop ? 'workshop' : 'standard',
     value,
     origin: map.source,
@@ -871,16 +967,14 @@ function normalizeServerMap(map) {
 }
 
 function areMapsEqual(existing, imported) {
-  if (existing.id && imported.id) {
-    return existing.id === imported.id;
-  }
-  return existing.name === imported.name || existing.value === imported.value;
+  const identity = getInventoryIdentity(existing);
+  return Boolean(identity) && existing.type === imported.type && identity === getInventoryIdentity(imported);
 }
 
 function updateAvailableMapsFromServer(items) {
-  const imported = items
+  const imported = mergeInventoryMaps(items
     .map(normalizeServerMap)
-    .filter(map => map && map.name && map.value);
+    .filter(map => map && map.name && map.value && !isVanityMap(map)));
 
   const serverKeys = new Set(imported.map(getMapKey));
   const merged = imported.map((incoming) => {
@@ -891,7 +985,7 @@ function updateAvailableMapsFromServer(items) {
     return incoming;
   });
 
-  const manualMaps = inventoryMaps.filter(map => !map.origin);
+  const manualMaps = inventoryMaps.filter(map => (!map.origin || map.tags?.length) && !isVanityMap(map));
   manualMaps.forEach((manual) => {
     if (!merged.some(existing => areMapsEqual(existing, manual))) {
       merged.push(manual);
@@ -905,14 +999,16 @@ function updateAvailableMapsFromServer(items) {
     return { ...map, unavailable: false };
   });
 
-  inventoryMaps = refreshed;
+  inventoryMaps = mergeInventoryMaps(refreshed.map(normalizeStoredMap));
 
   maps = maps.map((map) => {
+    const match = imported.find(incoming => areMapsEqual(incoming, map));
+    if (match) return { ...map, mapName: match.mapName, value: match.value, unavailable: false };
     if (map.origin && !serverKeys.has(getMapKey(map))) {
       return { ...map, unavailable: true };
     }
     return { ...map, unavailable: false };
-  });
+  }).filter(map => !isVanityMap(map));
 }
 
 async function refreshServerStatus() {
@@ -1560,7 +1656,7 @@ async function updateMapcycle() {
     return;
   }
 
-  const mapIds = validMaps.map(map => map.id || map.value || map.name).filter(Boolean);
+  const mapIds = validMaps.map(map => map.mapName || map.value || map.id || map.name).filter(Boolean);
 
   try {
     const response = await fetch('/api/cs/mapcycle', {
@@ -1678,14 +1774,15 @@ async function clearAvailableMaps() {
 }
 
 function isSelectableMap(map) {
-  return maps.some(item => item.name === map.name);
+  return maps.some(item => areSameMapIdentity(item, map));
 }
 
-async function addInventoryMap(mapName) {
-  const map = inventoryMaps.find(item => item.name === mapName);
+async function addInventoryMap(mapKey) {
+  const map = inventoryMaps.find(item => getMapIdentity(item) === mapKey);
   if (!map || isSelectableMap(map)) return;
 
-  maps.push({ ...map, source: 'inventory' });
+  const { tags, ...selectableMap } = map;
+  maps.push({ ...selectableMap, source: 'inventory' });
   try {
     await saveSharedMapState();
     renderMaps();
@@ -1820,6 +1917,7 @@ function renderInventory() {
           <div class="map-title-row">
             ${renderFavoriteButton(map)}
             <span class="map-name">${map.name}</span>
+            ${renderMapTagBadges(map)}
             <span class="map-badge map-badge-${badgeClass}">${badgeType}</span>
           </div>
           <div class="map-meta">
@@ -1828,7 +1926,7 @@ function renderInventory() {
             ${unavailableNote}
           </div>
         </div>
-        <button type="button" data-action="add-inventory" data-map="${map.name}" ${buttonDisabled}>
+        <button type="button" data-action="add-inventory" data-map="${escapeAttribute(getMapIdentity(map))}" ${buttonDisabled}>
           ${buttonLabel}
         </button>
       </div>
@@ -1839,43 +1937,59 @@ function renderInventory() {
   renderAvailableMapOptions();
 }
 
+function renderMapTagFilters() {
+  if (!mapTagFilterButtons) return;
+  mapTagFilterButtons.innerHTML = ['All', ...MAP_TAGS, 'Untagged'].map(label => {
+    const filter = label.toLowerCase();
+    const active = mapTagFilter === filter;
+    return `<button type="button" class="filter-chip${active ? ' active' : ''}" data-tag-filter="${filter}" aria-pressed="${active}">${label}</button>`;
+  }).join('');
+}
+
 function renderMaps() {
   const query = mapSearch.value.toLowerCase().trim();
   const filtered = maps
-    .filter(map => map.name.toLowerCase().includes(query) || map.value.toLowerCase().includes(query))
+    .filter(map => map.name.toLowerCase().includes(query) || map.value.toLowerCase().includes(query) || map.mapName.toLowerCase().includes(query))
+    .filter(map => mapTagFilter === 'all'
+      || (mapTagFilter === 'untagged' ? getMapTags(map).length === 0 : getMapTags(map).some(tag => tag.toLowerCase() === mapTagFilter)))
     .sort(compareMapsByFavoriteThenName);
 
+  renderMapTagFilters();
+
   if (!filtered.length) {
-    mapList.innerHTML = '<div class="empty">No selectable maps yet. Add maps from Available on Farmor.</div>';
+    mapList.innerHTML = `<div class="empty">${maps.length ? 'No maps match the current search and tag filter.' : 'No selectable maps yet. Add maps from Available on Farmor.'}</div>`;
     return;
   }
 
   mapList.innerHTML = filtered.map(map => {
-    const origin = map.source === 'inventory'
-      ? '<span class="source-pill">Available on Farmor</span>'
-      : '';
     const unavailableNote = map.unavailable
       ? '<div class="map-note map-note-unavailable">This map is no longer available on the Farmor server.</div>'
       : '';
     const addDisabled = map.unavailable ? 'disabled' : '';
     const addLabel = map.unavailable ? 'Unavailable' : 'Add';
+    const tagBadges = renderMapTagBadges(map);
+    const tagOptions = MAP_TAGS.map(tag => `<label><input type="checkbox" data-map-tag="${tag}" ${getMapTags(map).includes(tag) ? 'checked' : ''}>${tag}</label>`).join('');
 
     return `
       <div class="map-row">
-        <div class="map-row-left">
-          <div class="map-title-row">
-            ${renderFavoriteButton(map)}
-            <span class="map-name">${map.name}</span>
-            ${origin}
-          </div>
+        <div class="selectable-map-heading">
+          ${renderFavoriteButton(map)}
+          <span class="map-name" title="${escapeAttribute(map.name)}">${map.name}</span>
+          ${tagBadges}
+        </div>
+        <div class="selectable-map-bottom">
           <div class="map-meta">
             <small>${map.type === 'workshop' ? 'Workshop ID: ' + map.value : 'Standard map'}</small>
             ${unavailableNote}
           </div>
-        </div>
-        <div class="map-actions">
-          <button onclick="addMapToCycle('${map.name}')" ${addDisabled}>${addLabel}</button>
-          <button class="secondary" onclick="removeSelectableMap('${map.name}')">Remove</button>
+          <div class="map-actions">
+            <details class="map-tag-editor" data-map-key="${escapeAttribute(getMapIdentity(map))}">
+              <summary>Tags</summary>
+              <div class="map-tag-options" aria-label="Tags for ${escapeAttribute(map.name)}">${tagOptions}</div>
+            </details>
+            <button onclick="addMapToCycle('${map.name}')" ${addDisabled}>${addLabel}</button>
+            <button class="secondary" onclick="removeSelectableMap('${map.name}')">Remove</button>
+          </div>
         </div>
       </div>
     `;
@@ -1892,6 +2006,10 @@ function renderCycle() {
 
   cycleList.innerHTML = cycle.map((map, index) => {
     const mapDetails = findMapByCycleName(map);
+    const taggedMap = maps.find(item => item.name === map || item.mapName === map)
+      || inventoryMaps.find(item => item.name === map || item.mapName === map)
+      || mapDetails;
+    const tagBadges = renderMapTagBadges(taggedMap);
     const isCurrent = cycleProgress.currentMap === map;
     const isPlayed = !isCurrent && cycleProgress.playedMaps.includes(map);
     const progressIcon = isCurrent ? '&#9654;' : isPlayed ? '&#10003;' : '';
@@ -1908,7 +2026,10 @@ function renderCycle() {
       <span class="nr">${index + 1}</span>
       <span class="cycle-progress-icon" aria-label="${progressLabel}" title="${progressLabel}">${progressIcon}</span>
       ${renderFavoriteButton(mapDetails)}
-      <span class="map-name">${escapeHtml(map)}</span>
+      <div class="cycle-map-heading">
+        <span class="map-name">${escapeHtml(map)}</span>
+        ${tagBadges}
+      </div>
       <div class="cycle-move-actions" aria-label="Move ${escapeHtml(map)}">
         <button class="secondary icon-button" onclick="moveMapInCycle(${index}, -1)" ${index === 0 ? 'disabled' : ''} aria-label="Move ${escapeHtml(map)} up">&uarr;</button>
         <button class="secondary icon-button" onclick="moveMapInCycle(${index}, 1)" ${index === cycle.length - 1 ? 'disabled' : ''} aria-label="Move ${escapeHtml(map)} down">&darr;</button>
@@ -2067,7 +2188,7 @@ function getMapCommand(mapName) {
   if (!map) return `changelevel ${mapName}`;
   return map.type === 'workshop'
     ? `host_workshop_map ${map.value}`
-    : `changelevel ${map.value}`;
+    : `changelevel ${map.mapName || map.value}`;
 }
 
 async function loadMap(map) {
@@ -2080,7 +2201,7 @@ async function loadMap(map) {
         ? matched.value
         : `workshop:${matched.value}`;
     } else {
-      mapId = matched.value || matched.name;
+      mapId = matched.mapName || matched.value || matched.name;
     }
   }
 
@@ -2174,7 +2295,7 @@ async function addMapToLibrary() {
     return;
   }
 
-  maps.push({ name, type, value });
+  maps.push({ name, type, value, mapName: type === 'standard' ? value : name });
   try {
     await saveSharedMapState();
     nameInput.value = '';
@@ -2342,6 +2463,43 @@ if (mapList) {
     const favoriteButton = event.target.closest('button[data-action="toggle-favorite"]');
     if (!favoriteButton) return;
     toggleMapFavorite(favoriteButton.dataset.mapKey);
+  });
+  mapList.addEventListener('change', async event => {
+    const checkbox = event.target.closest('input[data-map-tag]');
+    if (!checkbox || tagEditSaving) return;
+    const editor = checkbox.closest('.map-tag-editor');
+    const selectedMap = maps.find(item => getMapIdentity(item) === editor.dataset.mapKey);
+    const map = selectedMap && getMasterMap(selectedMap);
+    if (!map) return;
+    const previousTags = [...map.tags];
+    map.tags = MAP_TAGS.filter(tag => tag === checkbox.dataset.mapTag ? checkbox.checked : previousTags.includes(tag));
+    tagEditSaving = true;
+    editor.querySelectorAll('input[data-map-tag]').forEach(input => { input.disabled = true; });
+    try {
+      await saveSharedMapState();
+      renderMaps();
+      renderCycle();
+      renderInventory();
+      const reopened = [...mapList.querySelectorAll('.map-tag-editor')].find(item => item.dataset.mapKey === editor.dataset.mapKey);
+      if (reopened) reopened.open = true;
+    } catch (err) {
+      map.tags = previousTags;
+      renderMaps();
+      renderInventory();
+      renderCycle();
+      showSharedMapStateError(err);
+    } finally {
+      tagEditSaving = false;
+    }
+  });
+}
+
+if (mapTagFilterButtons) {
+  mapTagFilterButtons.addEventListener('click', event => {
+    const button = event.target.closest('button[data-tag-filter]');
+    if (!button) return;
+    mapTagFilter = button.dataset.tagFilter;
+    renderMaps();
   });
 }
 
